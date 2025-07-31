@@ -4,29 +4,29 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Glowing Title Styling ----
+# ---- App Title (Clean and Attractive without Glow) ----
 st.markdown("""
     <style>
-    .glow-text {
-        font-size: 45px;
-        font-weight: bold;
-        text-align: center;
-        color: #ffffff;
-        text-shadow: 0 0 5px #FFD700, 0 0 10px #FFA500, 0 0 15px #FF4500, 0 0 20px #FF8C00;
-        font-family: 'Segoe UI', sans-serif;
-        padding: 20px 0;
-    }
+        .app-title {
+            font-size: 38px;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px;
+            color: #333333;
+            font-family: 'Segoe UI', sans-serif;
+            border-bottom: 2px solid #ffb347;
+        }
     </style>
-    <div class="glow-text">✨ Indian Wisdom ✨</div>
+    <div class="app-title">✨ Indian Wisdom</div>
 """, unsafe_allow_html=True)
 
-# ---- Theme Styling ----
+# ---- Theme and Navigation ----
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# Inject theme CSS
+# ---- Theme CSS ----
 if theme == "Dark":
     st.markdown(
         "<style>body { background-color: #1e1e1e; color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
@@ -37,7 +37,7 @@ elif theme == "Colorful":
         "<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
         unsafe_allow_html=True,
     )
-else:  # Light theme
+else:  # Light
     st.markdown(
         "<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; } .stApp { font-family: 'Segoe UI'; }</style>",
         unsafe_allow_html=True,
