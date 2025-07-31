@@ -32,9 +32,9 @@ def get_stats():
         except json.JSONDecodeError:
             return {}
 
-    region_counts = defaultdict(int)
-    for p in proverbs:
-        region = p.get("region", "Unknown")
-        region_counts[region] += 1
+    stats = defaultdict(int)
+    for entry in proverbs:
+        region = entry.get("region", "Unknown")
+        stats[region] += 1
 
-    return dict(region_counts)
+    return dict(stats)
