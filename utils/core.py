@@ -1,25 +1,24 @@
 import json
-from pathlib import Path
-from collections import Counter
+import os
 
-DATA_FILE = Path("proverbs.json")
-
-def load_proverbs():
-    if DATA_FILE.exists():
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+DATA_FILE = "proverbs.json"
 
 def save_proverb(proverb, region):
     data = load_proverbs()
-    for entry in data:
-        if entry["proverb"] == proverb:
-            return  # Avoid duplicates
     data.append({"proverb": proverb, "region": region, "votes": 0})
     with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def load_proverbs():
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 def get_stats():
     data = load_proverbs()
-    counts = Counter(p["region"] for p in data)
-    return dict(counts)
+    stats = {}
+    for item in data:
+        region = item["region"]
+        stats[region] = stats.get(region, 0) + 1
+    return stats
