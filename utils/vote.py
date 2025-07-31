@@ -1,10 +1,8 @@
-# utils/vote.py
-
 import random
 from utils.core import load_proverbs
 
 def get_random():
-    proverbs = load_proverbs()
-    if not proverbs:
+    data = load_proverbs()
+    if not data:
         return None
-    return random.choice(proverbs)["text"]
+    return random.choice(data).get("proverb", None)
