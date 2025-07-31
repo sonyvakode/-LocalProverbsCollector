@@ -1,12 +1,17 @@
-from gtts import gTTS
-import tempfile
-import streamlit as st
+# utils/audio.py
 
-def speak_text(text, lang_code):
-    try:
-        tts = gTTS(text=text, lang=lang_code)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
-            tts.save(tmp_file.name)
-            st.audio(tmp_file.name)
-    except Exception as e:
-        st.error(f"TTS error: {e}")
+import os
+from datetime import datetime
+
+def save_audio(file, region):
+    folder = os.path.join("data", "audio")
+    os.makedirs(folder, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{region}_{timestamp}_{file.name}"
+    filepath = os.path.join(folder, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(file.read())
+
+    return filepath
