@@ -1,21 +1,22 @@
 import json
 import os
 
-PROVERB_FILE = "data/proverbs.json"
+DATA_FILE = "proverbs.json"
 
 def load_proverbs():
-    if os.path.exists(PROVERB_FILE):
-        with open(PROVERB_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-def save_proverb(text, meaning, language):
-    data = load_proverbs()
-    data.append({
-        "text": text,
-        "meaning": meaning,
-        "language": language,
-        "votes": 0
-    })
-    with open(PROVERB_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def save_proverb(proverb, language):
+    proverbs = load_proverbs()
+    proverbs.append({"proverb": proverb, "language": language})
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(proverbs, f, ensure_ascii=False, indent=2)
+
+def get_language_code(lang_display):
+    lang_map = {
+        "en": "en", "hi": "hi", "ta": "ta", "te": "te", "ml": "ml", "bn": "bn", "gu": "gu", "kn": "kn", "mr": "mr", "or": "or", "pa": "pa"
+    }
+    return lang_map.get(lang_display, "en")
