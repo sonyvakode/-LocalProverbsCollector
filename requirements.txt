@@ -1,3 +1,5 @@
-pip install -r requirements.txt
+streamlit
 deep-translator
-streamlit run main.py
+gTTS
+speechrecognition
+pandas
