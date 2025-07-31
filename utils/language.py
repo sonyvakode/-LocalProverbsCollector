@@ -1,2 +1,2 @@
 def get_languages():
-    return ["Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Marathi", "Gujarati", "Bengali", "Punjabi", "Odia"]
+    return ["Hindi", "Marathi", "Telugu", "Tamil", "Bengali", "English","Kannada", "Malayalam", "Gujarati"]
