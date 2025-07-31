@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-import shutil
+
 PROVERB_FILE = "data/proverbs.json"
 AUDIO_DIR = "data/audio"
 
@@ -14,7 +14,7 @@ def load_proverbs():
         except json.JSONDecodeError:
             return []
 
-def save_proverb(proverb, region, audio_file=None):
+def save_proverb(proverb, region):
     data = load_proverbs()
     entry = {
         "proverb": proverb,
@@ -22,16 +22,8 @@ def save_proverb(proverb, region, audio_file=None):
         "timestamp": datetime.now().isoformat(),
         "votes": 0
     }
-
-    if audio_file:
-        os.makedirs(AUDIO_DIR, exist_ok=True)
-        audio_path = os.path.join(AUDIO_DIR, audio_file.name)
-        with open(audio_path, "wb") as out_file:
-            shutil.copyfileobj(audio_file, out_file)
-        entry["audio"] = audio_path
-
-    os.makedirs("data", exist_ok=True)
     data.append(entry)
+    os.makedirs("data", exist_ok=True)
     with open(PROVERB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -42,3 +34,10 @@ def get_stats():
         region = entry.get("region", "Unknown")
         stats[region] = stats.get(region, 0) + 1
     return stats
+
+def save_audio_file(file):
+    os.makedirs(AUDIO_DIR, exist_ok=True)
+    path = os.path.join(AUDIO_DIR, file.name)
+    with open(path, "wb") as f:
+        f.write(file.read())
+    return path
