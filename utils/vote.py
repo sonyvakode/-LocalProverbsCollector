@@ -1,19 +1,22 @@
 import random
-import json
-import os
+from .core import load_proverbs, update_metric
 
-PROVERB_FILE = "proverbs.json"
+def increment_vote(proverb_text):
+    update_metric(proverb_text, "votes")
+
+def increment_like(proverb_text):
+    update_metric(proverb_text, "likes")
+
+def increment_save(proverb_text):
+    update_metric(proverb_text, "saves")
+
+def increment_view(proverb_text):
+    update_metric(proverb_text, "views")
 
 def get_random():
-    """Return a random proverb from the file"""
-    if not os.path.exists(PROVERB_FILE):
-        return None
-
-    with open(PROVERB_FILE, "r", encoding="utf-8") as f:
-        proverbs = json.load(f)
-
+    proverbs = load_proverbs()
     if not proverbs:
         return None
-
-    proverb_entry = random.choice(proverbs)
-    return proverb_entry.get("text", "No proverb found.")
+    selected = random.choice(proverbs)
+    increment_view(selected["proverb"])
+    return selected["proverb"]
