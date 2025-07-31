@@ -1,6 +1,5 @@
 import streamlit as st
-from utils import core, vote
-from utils.translate import translate_text
+from utils import core, translate, vote
 import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
@@ -22,7 +21,7 @@ elif theme == "Colorful":
         "<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
         unsafe_allow_html=True,
     )
-else:  # Light theme
+else:
     st.markdown(
         "<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; } .stApp { font-family: 'Segoe UI'; }</style>",
         unsafe_allow_html=True,
@@ -57,11 +56,10 @@ elif page == "Translate":
     }
 
     chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
-
     if st.button("Translate"):
         if text:
             lang_code = lang_map[chosen_lang]
-            result = translate_text(text, lang_code)
+            result = translate.translate_text(text, lang_code)
             st.success(result)
         else:
             st.warning("Please enter a proverb to translate.")
