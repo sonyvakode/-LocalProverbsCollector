@@ -1,75 +1,51 @@
 import streamlit as st
-from utils import core, translate, vote
-import os
+from utils import core, vote, translate, language, audio
 
-st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# ---- Theme Sidebar ----
-with st.sidebar:
-    st.title("Choose Mode")
-    theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
-    page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
+st.title("🪔 Indian Wisdom: Local Proverbs Collector")
 
-# ---- Theme Styling ----
-if theme == "Dark":
-    st.markdown("<style>body { background-color: #1e1e1e; color: white; }</style>", unsafe_allow_html=True)
-elif theme == "Colorful":
-    st.markdown("<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; }</style>", unsafe_allow_html=True)
-else:
-    st.markdown("<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; }</style>", unsafe_allow_html=True)
+menu = ["Contribute", "Vote", "Stats"]
+choice = st.sidebar.radio("Go to", menu)
 
-# ---- Page Handling ----
-if page == "Submit":
-    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
-    st.subheader("📝 Submit a Local Proverb")
+if choice == "Contribute":
+    st.subheader("Share a Local Proverb")
 
-    proverb = st.text_area("Type the proverb in your language")
-    audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
-    region = st.text_input("Enter your location or region")
+    region = st.selectbox("Select your region", language.regions())
+    proverb = st.text_area("Enter the proverb in your language")
+
+    audio_file = st.file_uploader("Upload audio (optional)", type=["mp3", "wav"])
 
     if st.button("Submit"):
-        if proverb or audio:
-            core.save_proverb(proverb, region, audio)
-            st.success("Proverb submitted successfully!")
+        if proverb.strip() == "":
+            st.warning("Please enter a proverb.")
         else:
-            st.warning("Please provide a proverb or upload an audio file.")
+            core.save_proverb(proverb, region, audio_file)
+            st.success("✅ Proverb submitted!")
 
-elif page == "Translate":
-    st.header("🌐 Translate a Proverb")
-    text = st.text_input("Enter proverb to translate")
+elif choice == "Vote":
+    st.subheader("Vote on Proverbs")
 
-    lang_map = {
-        "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", "Bengali": "bn",
-        "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu", "Punjabi": "pa", "Urdu": "ur",
-        "Assamese": "as", "Odia": "or", "Sanskrit": "sa", "English": "en"
-    }
+    data = core.load_proverbs()
+    if not data:
+        st.info("No proverbs available yet.")
+    else:
+        for idx, entry in enumerate(data):
+            st.markdown(f"**{entry['proverb']}**  _(Region: {entry['region']})_")
+            if "audio" in entry:
+                st.audio(entry["audio"])
+            col1, col2 = st.columns([1, 5])
+            with col1:
+                if st.button("👍", key=f"up_{idx}"):
+                    vote.cast_vote(idx, upvote=True)
+            with col2:
+                st.write(f"Votes: {entry.get('votes', 0)}")
 
-    chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
-
-    if st.button("Translate"):
-        if text:
-            lang_code = lang_map[chosen_lang]
-            result = translate.translate_text(text, lang_code)
-            st.success(result)
-        else:
-            st.warning("Please enter a proverb to translate.")
-
-elif page == "Stats":
-    st.header("📊 Region-wise Contributions")
+elif choice == "Stats":
+    st.subheader("📊 Contribution Stats")
     stats = core.get_stats()
-    if stats:
-        st.json(stats)
+    if not stats:
+        st.info("No data available.")
     else:
-        st.warning("No statistics available yet.")
-
-elif page == "Proverb of the Day":
-    st.header("🎁 Today's Proverb")
-    proverb = vote.get_random()
-    if proverb:
-        st.success(proverb)
-    else:
-        st.warning("No proverb found.")
-
-elif page == "Settings":
-    st.header("⚙️ App Settings")
-    st.write("More app configuration settings coming soon.")
+        for region, count in stats.items():
+            st.write(f"**{region}**: {count} proverb(s)")
