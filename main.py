@@ -1,35 +1,34 @@
 import streamlit as st
 from utils import core, translate, vote
-import base64
 import random
 
+# Page config
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Custom Background Setup ----
-def set_background_base64(image_path):
-    with open(image_path, "rb") as f:
-        data = f.read()
-    encoded = base64.b64encode(data).decode()
-    css = f"""
+# Transparent Gradient Background via CSS (no external image)
+st.markdown("""
     <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{encoded}");
-        background-size: cover;
+    .stApp {
+        background: linear-gradient(to bottom right, rgba(255, 245, 204, 0.8), rgba(204, 229, 255, 0.8));
         background-attachment: fixed;
-        background-position: center;
-    }}
+        background-size: cover;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .proverb-card {
+        background: rgba(255, 255, 255, 0.6);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+    }
     </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# Set the transparent background using your uploaded image
-set_background_base64("streamlit_bg_gradient.png")  # Ensure this image is in your root folder
-
-# ---- Sidebar Navigation ----
+# Sidebar Navigation
 st.sidebar.title("📚 Menu")
 page = st.sidebar.radio("Go to", ["📥 Submit", "🌐 Translate", "📊 Stats", "🎁 Proverb of the Day", "⚙️ Settings"])
 
-# ---- Pages ----
+# ---- Submit Page ----
 if page == "📥 Submit":
     st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
@@ -44,6 +43,7 @@ if page == "📥 Submit":
         else:
             st.warning("Please enter a proverb before submitting.")
 
+# ---- Translate Page ----
 elif page == "🌐 Translate":
     st.header("🌐 Translate a Proverb")
     text = st.text_input("Enter proverb to translate")
@@ -66,6 +66,7 @@ elif page == "🌐 Translate":
         else:
             st.warning("Please enter a proverb to translate.")
 
+# ---- Stats Page ----
 elif page == "📊 Stats":
     st.header("📊 Region-wise Contributions")
     try:
@@ -73,27 +74,27 @@ elif page == "📊 Stats":
         if stats:
             st.json(stats)
         else:
-            st.warning("No statistics available yet.")
+            st.info("No statistics available yet.")
     except Exception as e:
         st.error("Unable to load statistics.")
 
+# ---- Proverb of the Day Page ----
 elif page == "🎁 Proverb of the Day":
     st.header("🌞 Proverb of the Day")
 
     proverbs = core.load_proverbs()
     if proverbs:
-        sampled = random.sample(proverbs, min(3, len(proverbs)))  # Show up to 3 randomly
+        sampled = random.sample(proverbs, min(3, len(proverbs)))
         for p in sampled:
             with st.container():
-                st.markdown(f"**🧾 {p['proverb']}**")
-                liked = st.button("❤️ Like", key=p["proverb"])
-                if liked:
+                st.markdown(f"<div class='proverb-card'><strong>🧾 {p['proverb']}</strong></div>", unsafe_allow_html=True)
+                if st.button("❤️ Like", key=p["proverb"]):
                     vote.increment_vote(p["proverb"])
                     st.success("You liked this proverb!")
-                st.markdown("---")
     else:
         st.info("No proverbs available.")
 
+# ---- Settings Page ----
 elif page == "⚙️ Settings":
     st.header("⚙️ App Settings")
     st.info("Settings panel coming soon.")
