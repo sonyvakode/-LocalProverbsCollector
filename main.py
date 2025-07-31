@@ -4,13 +4,13 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Theme Styling ----
+# ---- Sidebar ----
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# Inject theme CSS
+# ---- Theme Styling ----
 if theme == "Dark":
     st.markdown(
         "<style>body { background-color: #1e1e1e; color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
@@ -44,7 +44,6 @@ if page == "Submit":
 
 elif page == "Translate":
     st.header("🌐 Translate a Proverb")
-
     text = st.text_input("Enter proverb to translate")
 
     lang_map = {
@@ -56,10 +55,11 @@ elif page == "Translate":
     }
 
     chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
+
     if st.button("Translate"):
         if text:
             lang_code = lang_map[chosen_lang]
-            result = translate.translate_text(text, lang_code)
+            result = translate.translate(text, lang_code)
             st.success(result)
         else:
             st.warning("Please enter a proverb to translate.")
