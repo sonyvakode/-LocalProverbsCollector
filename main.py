@@ -4,28 +4,79 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Theme Styling ----
+# ---- Sidebar Theme Selection ----
 with st.sidebar:
-    st.title("Choose Mode")
+    st.title("🎨 Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# Inject theme CSS
+# ---- Theme Styling ----
+common_styles = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap');
+
+html, body, [class*="css"]  {
+    font-family: 'Quicksand', sans-serif;
+    transition: all 0.4s ease-in-out;
+}
+
+.stButton>button {
+    border-radius: 8px;
+    padding: 0.4em 1em;
+    background: #FF914D;
+    color: white;
+    border: none;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+.stButton>button:hover {
+    background: #ff5e00;
+    transform: scale(1.05);
+}
+</style>
+"""
+
 if theme == "Dark":
-    st.markdown(
-        "<style>body { background-color: #1e1e1e; color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"""
+        {common_styles}
+        <style>
+        body {{
+            background-color: #0e1117;
+            color: #FAFAFA;
+        }}
+        .stApp {{
+            background: radial-gradient(circle at top left, #1e1e2f, #111);
+        }}
+        </style>
+    """, unsafe_allow_html=True)
+
 elif theme == "Colorful":
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
-else:  # Light theme
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"""
+        {common_styles}
+        <style>
+        body {{
+            background: linear-gradient(135deg, #f9d423, #ff4e50);
+            color: white;
+        }}
+        .stApp {{
+            background: linear-gradient(135deg, #f9d423, #ff4e50);
+        }}
+        </style>
+    """, unsafe_allow_html=True)
+
+else:  # Light Theme
+    st.markdown(f"""
+        {common_styles}
+        <style>
+        body {{
+            background: linear-gradient(to right, #e3ffe7, #d9e7ff);
+            color: black;
+        }}
+        .stApp {{
+            background: linear-gradient(to right, #e3ffe7, #d9e7ff);
+        }}
+        </style>
+    """, unsafe_allow_html=True)
 
 # ---- Pages ----
 if page == "Submit":
