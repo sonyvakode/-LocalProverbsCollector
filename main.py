@@ -1,84 +1,96 @@
 import streamlit as st
 from utils import core, translate, vote
+from utils.audio import transcribe_audio
 
-st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
-
-# ---- Choose your preferred background URL here ----
-background_url = "https://images.unsplash.com/photo-1683078142484-2c7aec5ae048?auto=format&fit=crop&w=1950&q=80"  # pastel blur
-# background_url = "https://images.unsplash.com/photo-1683078243370-ab777dd24f11?auto=format&fit=crop&w=1950&q=80"  # pastel orange-pink
-# background_url = "https://images.unsplash.com/photo-1683078235170-8b3bcd1549cb?auto=format&fit=crop&w=1950&q=80"  # yellow-green mix
-# background_url = "https://images.unsplash.com/photo-1683078264564-0bd24fcd74f1?auto=format&fit=crop&w=1950&q=80"  # beige-white bokeh
-
-st.markdown(f"""
+# --- Background image with base64 (transparent effect) ---
+def set_custom_bg():
+    bg_image = '''
     <style>
-    body {{
-        background: url("{background_url}") no-repeat center center fixed;
+    .stApp {
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABkAAAAOECAIAAAB2L2r1AAAZRklEQVR4nO3YQW7CMBRAwbb3P2DPwQXcHVJBqRLihAed2bFI/G0i");
         background-size: cover;
-    }}
-    .block-container {{
-        background-color: rgba(255, 255, 255, 0.85);
-        padding: 2rem;
-        border-radius: 12px;
-    }}
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
     </style>
-""", unsafe_allow_html=True)
+    '''
+    st.markdown(bg_image, unsafe_allow_html=True)
 
-with st.sidebar:
-    st.title("Choose Mode")
-    theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
-    page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
+# Call it early to render
+set_custom_bg()
 
-if page == "Submit":
-    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
+# --- App Title ---
+st.markdown("<h1 style='font-size: 2.5rem;'>🪔 Indian Wisdom: Local Proverbs Collector</h1>", unsafe_allow_html=True)
+st.markdown("---")
+
+# --- Navigation ---
+tabs = ["Submit", "Translate", "Stats", "Proverb of the Day"]
+selected = st.sidebar.radio("Go to", tabs)
+
+# --- Submit Tab ---
+if selected == "Submit":
     st.subheader("📝 Submit a Local Proverb")
     proverb = st.text_area("Type the proverb in your language")
-    audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
-    region = st.text_input("Enter your location or region")
+
+    audio_file = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
+    location = st.text_input("Enter your location or region")
+
     if st.button("Submit"):
+        if audio_file:
+            proverb = transcribe_audio(audio_file)
         if proverb:
-            core.save_proverb(proverb, region)
-            st.success("Proverb submitted successfully!")
+            core.save_proverb(proverb, location)
+            st.success("✅ Proverb submitted successfully!")
         else:
-            st.warning("Please enter a proverb before submitting.")
+            st.error("⚠️ Please enter or upload a proverb.")
 
-elif page == "Translate":
-    st.header("🌐 Translate a Proverb")
-    text = st.text_input("Enter proverb to translate")
-    lang_map = {
-        "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", 
-        "Bengali": "bn", "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu", 
-        "Punjabi": "pa", "Urdu": "ur", "Assamese": "as", "Odia": "or", "Sanskrit": "sa", 
-        "English": "en", "Arabic": "ar", "French": "fr", "Spanish": "es", 
-        "German": "de", "Chinese": "zh-CN", "Japanese": "ja", "Russian": "ru", 
-        "Korean": "ko", "Portuguese": "pt", "Italian": "it", "Turkish": "tr"
-    }
-    chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
+# --- Translate Tab ---
+elif selected == "Translate":
+    st.subheader("🌍 Translate a Proverb")
+    original = st.text_input("Enter the proverb to translate")
+    target_lang = st.selectbox("Choose target language", ["en", "hi", "ta", "te", "kn", "ml", "bn"])
+
     if st.button("Translate"):
-        if text.strip():
-            result = translate.translate(text, lang_map[chosen_lang])
-            st.success(result)
+        if original:
+            translated = translate.translate_proverb(original, target_lang)
+            st.success(f"✅ Translated: {translated}")
         else:
-            st.warning("Please enter a proverb to translate.")
+            st.error("⚠️ Please enter a proverb to translate.")
 
-elif page == "Stats":
-    st.header("📊 Region-wise Contributions")
+# --- Stats Tab ---
+elif selected == "Stats":
+    st.subheader("📊 Proverb Statistics")
     stats = core.get_stats()
-    if stats:
-        st.json(stats)
-    else:
-        st.warning("No statistics available yet.")
+    st.write("**Total Proverbs:**", stats["total"])
+    st.write("**Most Active Region:**", stats["top_region"])
+    st.write("**Most Liked Proverb:**", stats["top_proverb"])
 
-elif page == "Proverb of the Day":
-    st.header("🎁 Proverb of the Day")
-    proverb = vote.get_random()
-    if proverb:
-        st.success(proverb)
-        if st.button("❤️ Like"):
-            vote.increment_vote(proverb)
-            st.toast("Thanks for liking!", icon="❤️")
-    else:
-        st.warning("No proverb found.")
+# --- Proverb of the Day ---
+elif selected == "Proverb of the Day":
+    st.subheader("🎁 Proverb of the Day")
+    proverbs = vote.get_multiple(3)
 
-elif page == "Settings":
-    st.header("⚙️ App Settings")
-    st.write("More app configuration settings coming soon.")
+    for proverb in proverbs:
+        text = proverb["text"]
+        likes = proverb.get("likes", 0)
+        views = proverb.get("views", 0)
+
+        with st.container():
+            st.markdown(
+                f"""
+                <div style="background-color: #fff3c4; padding: 1.2rem; border-radius: 1rem; margin-bottom: 1.5rem;">
+                    <h4 style="color:#333;">{text}</h4>
+                    <p style="font-style: italic;">Brought from the heart of Indian villages.</p>
+                    <hr>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>❤️ {likes}</div>
+                        <div>👁️ {views}</div>
+                        <div>⏱️ 1 min read</div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            if st.button(f"Like this ❤️", key=f"like_{text}"):
+                vote.increment_like(text)
+                st.experimental_rerun()
