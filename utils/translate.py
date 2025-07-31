@@ -1,7 +1,11 @@
-from deep_translator import GoogleTranslator
+# utils/translate.py
 
-def translate_proverb(text, src, target):
+from googletrans import Translator
+
+def translate_text(text, dest_lang):
+    translator = Translator()
     try:
-        return GoogleTranslator(source=src, target=target).translate(text)
+        translated = translator.translate(text, dest=dest_lang)
+        return translated.text
     except Exception as e:
-        return f"Translation failed: {e}"
+        return f"Translation failed: {str(e)}"
