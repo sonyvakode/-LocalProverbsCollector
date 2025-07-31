@@ -4,7 +4,7 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Sidebar ----
+# ---- Theme Sidebar ----
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
@@ -12,35 +12,27 @@ with st.sidebar:
 
 # ---- Theme Styling ----
 if theme == "Dark":
-    st.markdown(
-        "<style>body { background-color: #1e1e1e; color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<style>body { background-color: #1e1e1e; color: white; }</style>", unsafe_allow_html=True)
 elif theme == "Colorful":
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; }</style>", unsafe_allow_html=True)
 else:
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; }</style>", unsafe_allow_html=True)
 
-# ---- Pages ----
+# ---- Page Handling ----
 if page == "Submit":
     st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
+
     proverb = st.text_area("Type the proverb in your language")
     audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
     region = st.text_input("Enter your location or region")
 
     if st.button("Submit"):
-        if proverb:
-            core.save_proverb(proverb, region)
+        if proverb or audio:
+            core.save_proverb(proverb, region, audio)
             st.success("Proverb submitted successfully!")
         else:
-            st.warning("Please enter a proverb before submitting.")
+            st.warning("Please provide a proverb or upload an audio file.")
 
 elif page == "Translate":
     st.header("🌐 Translate a Proverb")
@@ -49,9 +41,7 @@ elif page == "Translate":
     lang_map = {
         "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", "Bengali": "bn",
         "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu", "Punjabi": "pa", "Urdu": "ur",
-        "Assamese": "as", "Odia": "or", "Sanskrit": "sa", "English": "en", "Arabic": "ar",
-        "French": "fr", "Spanish": "es", "German": "de", "Chinese": "zh-CN", "Japanese": "ja",
-        "Russian": "ru", "Korean": "ko", "Portuguese": "pt", "Italian": "it", "Turkish": "tr"
+        "Assamese": "as", "Odia": "or", "Sanskrit": "sa", "English": "en"
     }
 
     chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
@@ -59,7 +49,7 @@ elif page == "Translate":
     if st.button("Translate"):
         if text:
             lang_code = lang_map[chosen_lang]
-            result = translate.translate(text, lang_code)
+            result = translate.translate_text(text, lang_code)
             st.success(result)
         else:
             st.warning("Please enter a proverb to translate.")
