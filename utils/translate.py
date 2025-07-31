@@ -1,2 +1,2 @@
-def mock_translate(text, target_language):
-    return f"[{target_language}] (mock translation)"
+def mock_translate(text, lang_code):
+    return f"[{lang_code}] {text[::-1]}"  # Just reverse the string as a mock
