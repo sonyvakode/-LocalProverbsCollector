@@ -2,7 +2,6 @@ import os
 import json
 from datetime import datetime
 import shutil
-
 PROVERB_FILE = "data/proverbs.json"
 AUDIO_DIR = "data/audio"
 
