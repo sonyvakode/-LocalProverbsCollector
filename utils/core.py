@@ -1,24 +1,23 @@
+# utils/core.py
+
 import os
-from collections import Counter
+import json
 
-def save_proverb(text, region):
-    os.makedirs("data", exist_ok=True)
-    with open("data/proverbs.txt", "a", encoding="utf-8") as f:
-        f.write(text.strip() + "\n")
+DATA_FILE = "data/proverbs.json"
 
-def get_stats():
-    path = "data/proverbs.txt"
-    if not os.path.exists(path):
-        return {}
-    with open(path, "r", encoding="utf-8") as f:
-        lines = [line.strip() for line in f if line.strip()]
-    lang_counts = Counter([detect_lang(l) for l in lines])
-    return dict(lang_counts)
+def load_proverbs():
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-def detect_lang(text):
-    if "।" in text: return "Hindi"
-    if "తె" in text or "డు" in text: return "Telugu"
-    if "அ" in text: return "Tamil"
-    if "ಕ" in text: return "Kannada"
-    if "স" in text: return "Bengali"
-    return "Unknown"
+def save_proverb(text, meaning, language):
+    proverbs = load_proverbs()
+    proverbs.append({
+        "text": text,
+        "meaning": meaning,
+        "language": language,
+        "votes": 0
+    })
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(proverbs, f, indent=2, ensure_ascii=False)
