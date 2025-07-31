@@ -1,2 +1,8 @@
-def mock_translate(text, lang_code):
-    return f"[{lang_code}] {text[::-1]}"  # Just reverse the string as a mock
+from deep_translator import GoogleTranslator
+
+def translate(text, target_lang):
+    try:
+        translated = GoogleTranslator(source='auto', target=target_lang).translate(text)
+        return translated
+    except Exception as e:
+        return f"Translation failed: {e}"
