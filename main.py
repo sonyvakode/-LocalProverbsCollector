@@ -4,26 +4,29 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Theme and Navigation ----
+# ---- Sidebar ----
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# ---- Background Styling with Transparent Card Effect ----
-st.markdown("""
+# ---- Background Styling with Your Image ----
+background_url = "https://cdn.pixabay.com/photo/2017/03/01/23/19/bible-2110439_1280.jpg"  # fallback if needed
+uploaded_image_path = "/mnt/data/95b63969-62d1-491c-8833-3b9513a72f09.png"
+
+st.markdown(f"""
     <style>
-    body {
-        background: url('https://images.unsplash.com/photo-1548092372-0d1bd40894a3?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+    body {{
+        background: url('{uploaded_image_path}') no-repeat center center fixed;
         background-size: cover;
-    }
-    .stApp {
-        background-color: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(8px);
+    }}
+    .stApp {{
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
         border-radius: 10px;
         padding: 20px;
         font-family: 'Segoe UI', sans-serif;
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
