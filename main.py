@@ -1,89 +1,62 @@
 import streamlit as st
-import pandas as pd
 import os
-import platform
-import speech_recognition as sr
-from utils.translate import translate_proverb
-from utils.audio import speak_text
+import json
 from utils.core import load_proverbs, save_proverb, get_language_code
+from utils.audio import speak_text
+from utils.translate import translate_text
+from utils.theme import set_theme
+from utils.stats import display_statistics
 
-# ---------- CONFIG -----------
-st.set_page_config(page_title="Local Proverbs Collector", layout="centered")
-
-# ---------- SESSION STATE -----------
-if "theme" not in st.session_state:
-    st.session_state.theme = "light"
-if "language" not in st.session_state:
-    st.session_state.language = "en"
-
-# ---------- HEADER -----------
-st.markdown("""
-    <h1 style='text-align: center;'>📚 Local Proverbs Collector</h1>
-    <p style='text-align: center;'>AI-powered preservation of Indian wisdom.</p>
-    """, unsafe_allow_html=True)
-
-# ---------- SIDEBAR -----------
-st.sidebar.header("⚙️ Settings")
+# Set up theme
 theme = st.sidebar.radio("Choose Theme", ["Light", "Dark"])
-lang = st.sidebar.selectbox("Select Language", ["en", "hi", "ta", "te", "bn", "ml", "kn", "gu", "mr"])
+set_theme(theme)
 
-st.session_state.theme = theme.lower()
-st.session_state.language = lang
+# Language selection
+languages = ["en", "hi", "ta", "te", "ml", "bn", "kn", "gu", "mr", "pa"]
+language = st.sidebar.selectbox("Select Language", languages)
+lang_code = get_language_code(language)
 
-# ---------- APPLY THEME -----------
-if st.session_state.theme == "dark":
-    st.markdown("""
-        <style>
-        body, .stApp { background-color: #1e1e1e; color: white; }
-        </style>
-    """, unsafe_allow_html=True)
+st.sidebar.markdown("""
+<small>🧠 AI-powered preservation of Indian wisdom.</small>
+""", unsafe_allow_html=True)
 
-# ---------- INPUT -----------
-st.subheader("📝 Add a New Proverb")
-proverb = st.text_area("Or record your proverb:")
+st.title("🌱 Local Proverbs Collector")
 
-# ---------- VOICE INPUT -----------
-if st.button("🎙️ Start Voice Input"):
-    if "streamlit" in platform.platform().lower():
-        st.warning("Voice input is not supported on Streamlit Cloud. Please use text input.")
-    else:
-        recognizer = sr.Recognizer()
-        try:
-            with sr.Microphone() as source:
-                st.info("Listening... Please speak your proverb.")
-                audio = recognizer.listen(source, timeout=5)
-                proverb = recognizer.recognize_google(audio, language=lang)
-                st.success(f"Captured: {proverb}")
-        except Exception as e:
-            st.error(f"Voice input failed: {e}")
+# Add a new proverb
+st.header("✍️ Add a New Proverb")
+new_proverb = st.text_area("Or record your proverb:")
 
-# ---------- SAVE PROVERB -----------
 if st.button("✅ Submit Proverb"):
-    if proverb.strip() != "":
-        save_proverb(proverb, lang)
-        st.success("Proverb submitted!")
+    if new_proverb.strip():
+        save_proverb(new_proverb.strip(), language)
+        st.success("Proverb saved!")
     else:
-        st.warning("Please enter or record a proverb first.")
+        st.warning("Please enter or record a proverb.")
 
-# ---------- TTS & TRANSLATION -----------
-st.subheader("🧠 Tools for Understanding")
-if st.button("🔊 Hear the Proverb"):
-    if proverb:
-        speak_text(proverb, get_language_code(lang))
-    else:
-        st.warning("Enter a proverb first.")
+# Tools for understanding
+st.header("🧠 Tools for Understanding")
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("🔊 Hear the Proverb"):
+        speak_text(new_proverb, lang_code)
 
-if st.button("🌐 Translate to English"):
-    if proverb:
-        translated = translate_proverb(proverb, lang, "en")
-        st.info(f"Translation: {translated}")
-    else:
-        st.warning("Enter a proverb first.")
+with col2:
+    if st.button("🌐 Translate to English"):
+        translation = translate_text(new_proverb, lang_code, "en")
+        st.info(f"Translation: {translation}")
 
-# ---------- STATS -----------
-st.subheader("📊 Proverbs Collected")
+# Display collected proverbs
+st.header("📊 Proverbs Collected")
 proverbs_data = load_proverbs()
-if not proverbs_data.empty:
-    st.dataframe(proverbs_data.tail(10))
+
+if proverbs_data:
+    for entry in proverbs_data[::-1]:
+        st.markdown(f"**[{entry['language'].upper()}]** {entry['text']}")
 else:
-    st.info("No proverbs collected yet. Be the first to contribute!")
+    st.info("No proverbs submitted yet.")
+
+# Stats page
+st.markdown("""---
+### 📈 Statistics
+""")
+display_statistics(proverbs_data)
