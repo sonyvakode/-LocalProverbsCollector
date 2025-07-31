@@ -3,7 +3,6 @@ import json
 from datetime import datetime
 
 PROVERB_FILE = "data/proverbs.json"
-AUDIO_DIR = "data/audio"
 
 def load_proverbs():
     if not os.path.exists(PROVERB_FILE):
@@ -34,10 +33,3 @@ def get_stats():
         region = entry.get("region", "Unknown")
         stats[region] = stats.get(region, 0) + 1
     return stats
-
-def save_audio_file(file):
-    os.makedirs(AUDIO_DIR, exist_ok=True)
-    path = os.path.join(AUDIO_DIR, file.name)
-    with open(path, "wb") as f:
-        f.write(file.read())
-    return path
