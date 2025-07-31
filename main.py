@@ -1,49 +1,49 @@
 import streamlit as st
 from utils import core, translate, vote
+import os
 
-# Page config
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# Image path (from your uploaded file)
-background_image_url = "https://raw.githubusercontent.com/viswamsundar/indian-proverbs/main/assets/bg_proverbs.png"
-
-# Inject custom CSS
-st.markdown(
-    f"""
+# ---- Background CSS ----
+st.markdown("""
     <style>
-    .stApp {{
-        background-image: url("{background_image_url}");
+    .stApp {
+        background-image: url("static/background.png");
         background-size: cover;
         background-position: center;
-        background-repeat: no-repeat;
         background-attachment: fixed;
-    }}
-    .main {{
+    }
+    .block-container {
         background-color: rgba(255, 255, 255, 0.85);
         padding: 2rem;
-        border-radius: 12px;
-    }}
+        border-radius: 1rem;
+    }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# Sidebar
+# ---- Sidebar ----
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# THEME: simple font styling (without glowing)
-st.markdown("""
-    <style>
-    h1, h2, h3, h4 {{
-        font-family: 'Segoe UI', sans-serif;
-    }}
-    </style>
-""", unsafe_allow_html=True)
+# ---- Theme-specific adjustments ----
+if theme == "Dark":
+    st.markdown("""
+        <style>
+        body { color: white; }
+        </style>
+    """, unsafe_allow_html=True)
+elif theme == "Colorful":
+    st.markdown("""
+        <style>
+        .stApp {
+            background: linear-gradient(to right, #f9d423, #ff4e50) !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-# Pages
+# ---- Pages ----
 if page == "Submit":
     st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
@@ -89,16 +89,26 @@ elif page == "Stats":
         st.warning("No statistics available yet.")
 
 elif page == "Proverb of the Day":
-    st.header("🎁 Today's Proverb")
+    st.header("🎁 Proverb of the Day")
     proverb = vote.get_random()
     if proverb:
-        st.success(proverb)
-        if st.button("❤️ Like"):
-            vote.increment_vote(proverb)
-            st.toast("Thanks for liking!", icon="❤️")
+        st.markdown(f"""
+        <div style='
+            background-color: #fff6d5;
+            border-left: 10px solid orange;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+        '>
+            {proverb}
+            <div style="margin-top:10px;">
+                <span style="font-size: 16px;">❤️  Like</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     else:
         st.warning("No proverb found.")
 
 elif page == "Settings":
     st.header("⚙️ App Settings")
-    st.write("More app configuration settings coming soon.")
+    st.info("More app configuration settings coming soon.")
