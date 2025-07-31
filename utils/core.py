@@ -1,15 +1,13 @@
-# utils/core.py
-
-import os
 import json
+import os
 
-DATA_FILE = "data/proverbs.json"
+DATA_FILE = "proverbs.json"
 
 def load_proverbs():
-    if not os.path.exists(DATA_FILE):
-        return []
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
 
 def save_proverb(text, meaning, language):
     proverbs = load_proverbs()
@@ -20,4 +18,4 @@ def save_proverb(text, meaning, language):
         "votes": 0
     })
     with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(proverbs, f, indent=2, ensure_ascii=False)
+        json.dump(proverbs, f, ensure_ascii=False, indent=2)
