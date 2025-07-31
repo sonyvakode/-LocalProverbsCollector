@@ -33,8 +33,17 @@ def get_stats():
             return {}
 
     stats = defaultdict(int)
-    for entry in proverbs:
-        region = entry.get("region", "Unknown")
-        stats[region] += 1
+    for p in proverbs:
+        stats[p.get("region", "Unknown")] += 1
 
     return dict(stats)
+
+def load_proverbs():
+    if not os.path.exists(PROVERB_FILE):
+        return []
+
+    with open(PROVERB_FILE, "r", encoding="utf-8") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
