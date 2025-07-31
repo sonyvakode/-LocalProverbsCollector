@@ -1,13 +1,9 @@
 import os
-import hashlib
+import shutil
 
-AUDIO_DIR = "data/audio"
-
-def save_audio_file(uploaded_file, proverb_text):
-    os.makedirs(AUDIO_DIR, exist_ok=True)
-    hash_id = hashlib.md5(proverb_text.encode('utf-8')).hexdigest()
-    filename = f"{hash_id}_{uploaded_file.name}"
-    filepath = os.path.join(AUDIO_DIR, filename)
-
+def save_audio(uploaded_file, proverb_text):
+    os.makedirs("data/audio", exist_ok=True)
+    filename = f"{proverb_text[:30].strip().replace(' ', '_')}_{uploaded_file.name}"
+    filepath = os.path.join("data/audio", filename)
     with open(filepath, "wb") as f:
-        f.write(uploaded_file.read())
+        shutil.copyfileobj(uploaded_file, f)
