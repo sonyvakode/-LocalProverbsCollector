@@ -32,7 +32,7 @@ India is home to thousands of languages and dialects, each rich with proverbs th
 ### Installation
 
 ```bash
-git clone https://github.com/sonyvakode/local-proverbs-collector.git
+git clone https://github.com/sonyvakode/-LocalProverbsCollector
 cd local-proverbs-collector
 pip install -r requirements.txt
 streamlit run app.py
