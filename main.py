@@ -4,47 +4,32 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- App Title (Clean and Attractive without Glow) ----
-st.markdown("""
-    <style>
-        .app-title {
-            font-size: 38px;
-            font-weight: 600;
-            text-align: center;
-            padding: 12px;
-            color: #333333;
-            font-family: 'Segoe UI', sans-serif;
-            border-bottom: 2px solid #ffb347;
-        }
-    </style>
-    <div class="app-title">✨ Indian Wisdom</div>
-""", unsafe_allow_html=True)
-
 # ---- Theme and Navigation ----
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# ---- Theme CSS ----
-if theme == "Dark":
-    st.markdown(
-        "<style>body { background-color: #1e1e1e; color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
-elif theme == "Colorful":
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
-else:  # Light
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+# ---- Background Styling with Transparent Card Effect ----
+st.markdown("""
+    <style>
+    body {
+        background: url('https://images.unsplash.com/photo-1548092372-0d1bd40894a3?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+        background-size: cover;
+    }
+    .stApp {
+        background-color: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(8px);
+        border-radius: 10px;
+        padding: 20px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # ---- Pages ----
 if page == "Submit":
+    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
     proverb = st.text_area("Type the proverb in your language")
     audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
