@@ -4,45 +4,53 @@ import random
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# Sidebar Navigation
+# Set a nice subtle background using base64
+st.markdown("""
+    <style>
+        .stApp {
+            background-image: url("https://images.unsplash.com/photo-1601597111158-3d91a9c2d0b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .like-button {
+            display: inline-block;
+            font-size: 24px;
+            color: red;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 10px;
+        }
+        .like-count {
+            display: inline-block;
+            margin-left: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Sidebar
 with st.sidebar:
-    st.title("📚 Indian Wisdom")
-    page = st.radio("Navigate", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
-
-# Sample Regions for Dropdown
-regions_list = [
-    "Andhra Pradesh", "Tamil Nadu", "Punjab", "Telangana","West Bengal", "Maharashtra",
-    "Karnataka", "Kerala", "Gujarat", "Assam", "Uttar Pradesh", "Odisha", "Bihar", "Rajasthan", "Delhi"
-]
-
-# Extra Sample Proverbs for display
-extra_proverbs = [
-    {"proverb": "Patience is the key to paradise.", "region": "Kashmir"},
-    {"proverb": "Even a hare will bite when it is cornered.", "region": "Tamil Nadu"},
-    {"proverb": "Words are like arrows, once loosed you cannot call them back.", "region": "Assam"},
-    {"proverb": "One thread for the needle, one for the knot.", "region": "Maharashtra"},
-    {"proverb": "He who digs a pit for others falls into it himself.", "region": "Gujarat"},
-    {"proverb": "A single tree does not make a forest.", "region": "Kerala"}
-]
+    page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
 # Pages
 if page == "Submit":
-    st.header("📝 Submit a Local Proverb")
+    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
+    st.subheader("📝 Submit a Local Proverb")
     proverb = st.text_area("Type the proverb in your language")
     audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
-    region = st.selectbox("Select your region", regions_list)
-
+    region = st.selectbox("Enter your location or region", ["Delhi", "Mumbai", "Hyderabad", "Bangalore", "Kolkata", "Other"])
     if st.button("Submit"):
         if proverb:
             core.save_proverb(proverb, region)
-            st.success("✅ Proverb submitted successfully!")
+            st.success("Proverb submitted successfully!")
         else:
-            st.warning("⚠️ Please enter a proverb before submitting.")
+            st.warning("Please enter a proverb before submitting.")
 
 elif page == "Translate":
     st.header("🌐 Translate a Proverb")
     text = st.text_input("Enter proverb to translate")
-
     lang_map = {
         "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", "Bengali": "bn",
         "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu", "Punjabi": "pa", "Urdu": "ur",
@@ -50,16 +58,14 @@ elif page == "Translate":
         "French": "fr", "Spanish": "es", "German": "de", "Chinese": "zh-CN", "Japanese": "ja",
         "Russian": "ru", "Korean": "ko", "Portuguese": "pt", "Italian": "it", "Turkish": "tr"
     }
-
     chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
-
     if st.button("Translate"):
         if text.strip():
             lang_code = lang_map[chosen_lang]
             result = translate.translate(text, lang_code)
             st.success(result)
         else:
-            st.warning("⚠️ Please enter a proverb to translate.")
+            st.warning("Please enter a proverb to translate.")
 
 elif page == "Stats":
     st.header("📊 Region-wise Contributions")
@@ -67,42 +73,39 @@ elif page == "Stats":
     if stats:
         st.bar_chart(stats)
     else:
-        st.warning("ℹ️ No statistics available yet.")
+        st.warning("No statistics available yet.")
 
 elif page == "Proverb of the Day":
-    st.header("🎁 Today's Proverbs")
+    st.header("🎁 Proverb of the Day")
+    proverbs = vote.get_all_proverbs()  # Ensure this returns a list of dicts like {"proverb": "...", "region": "..."}
+    if proverbs:
+        if 'liked_proverbs' not in st.session_state:
+            st.session_state.liked_proverbs = {}
 
-    # Safely handle case where get_random() returns a string
-    primary = vote.get_random()
-    featured = [{"proverb": primary, "region": "India"}] if primary else []
+        random_index = random.randint(0, len(proverbs) - 1)
+        item = proverbs[random_index]
+        proverb_text = item.get("proverb", "No proverb found.")
+        region = item.get("region", "Unknown region")
 
-    # Add 3 random extra proverbs
-    featured += random.sample(extra_proverbs, 3)
+        # Randomly translate to a language
+        display_langs = ["hi", "te", "ta", "kn", "ml", "gu", "pa", "ur", "bn"]
+        target_lang = random.choice(display_langs)
+        translated = translate.translate(proverb_text, target_lang)
 
-    for item in featured:
-        proverb_text = item.get("proverb", "")
-        region = item.get("region", "India")
+        st.subheader(f"📍 From: {region}")
+        st.markdown(f"<div style='font-size: 22px; font-style: italic;'>“{translated}”</div>", unsafe_allow_html=True)
 
-        st.markdown(f"""
-            <div style='padding: 15px; background: rgba(255,255,255,0.85); border-radius: 10px; margin-bottom: 20px;'>
-                <h5 style='margin-bottom: 5px;'>{proverb_text}</h5>
-                <p style='font-size: 0.85rem; color: #555;'>📍 Region: {region}</p>
-                ❤️ <span style='font-size: 0.85rem; color: #777;'>Like</span>
-            </div>
-        """, unsafe_allow_html=True)
+        # Like button
+        if proverb_text not in st.session_state.liked_proverbs:
+            st.session_state.liked_proverbs[proverb_text] = 0
+
+        if st.button("❤️ Like"):
+            st.session_state.liked_proverbs[proverb_text] += 1
+
+        st.markdown(f"<span class='like-count'>Likes: {st.session_state.liked_proverbs[proverb_text]}</span>", unsafe_allow_html=True)
+    else:
+        st.warning("No proverb available today.")
 
 elif page == "Settings":
     st.header("⚙️ App Settings")
-    st.write("More app configuration settings coming soon.")
-
-# Add Transparent Background with inline CSS (no file used)
-st.markdown("""
-<style>
-body {
-    background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
-                url('https://images.unsplash.com/photo-1549887534-4b6d3e01f8d1?auto=format&fit=crop&w=1600&q=80');
-    background-size: cover;
-    background-attachment: fixed;
-}
-</style>
-""", unsafe_allow_html=True)
+    st.write("More configuration options coming soon.")
