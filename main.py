@@ -3,55 +3,30 @@ from utils import core, vote, translate, language, audio
 
 st.set_page_config(page_title="🪔 Indian Wisdom", layout="wide")
 
-# 🔥 Custom Animated CSS Styling
+# 🌈 Beautiful Background Gradient (only this added)
 st.markdown("""
     <style>
-    /* General Page Style */
     .stApp {
-        animation: fadeIn 1.5s ease-in;
-        background: linear-gradient(to right, #fffaf0, #fefbd8);
+        background: linear-gradient(to bottom right, #fdfbfb, #ebedee);
+        background-attachment: fixed;
     }
 
-    /* Fade-in animation */
-    @keyframes fadeIn {
-        0% {opacity: 0;}
-        100% {opacity: 1;}
-    }
-
-    /* Animated headers */
     h1, h2, h3 {
-        color: #4b2e83;
-        animation: pulseHeader 2s infinite alternate;
+        color: #3f3d56;
     }
 
-    @keyframes pulseHeader {
-        0% { text-shadow: 0 0 5px #c3b1e1; }
-        100% { text-shadow: 0 0 15px #b39ddb; }
-    }
-
-    /* Fancy buttons */
     .stButton > button {
-        background-color: #7e57c2;
+        background-color: #6a1b9a;
         color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
         border-radius: 8px;
-        transition: all 0.3s ease;
+        padding: 0.5em 1em;
+        border: none;
+        transition: 0.3s ease;
     }
 
     .stButton > button:hover {
-        background-color: #5e35b1;
+        background-color: #4a148c;
         transform: scale(1.05);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .stTextInput, .stSelectbox, .stFileUploader {
-        transition: transform 0.3s ease;
-    }
-
-    .stTextInput:hover, .stSelectbox:hover, .stFileUploader:hover {
-        transform: scale(1.02);
     }
     </style>
 """, unsafe_allow_html=True)
