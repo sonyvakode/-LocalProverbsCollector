@@ -2,49 +2,44 @@ import streamlit as st
 from utils import core, translate, vote
 import random
 
-# Page config
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# Transparent Gradient Background via CSS (no external image)
-st.markdown("""
-    <style>
-    .stApp {
-        background: linear-gradient(to bottom right, rgba(255, 245, 204, 0.8), rgba(204, 229, 255, 0.8));
-        background-attachment: fixed;
-        background-size: cover;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    .proverb-card {
-        background: rgba(255, 255, 255, 0.6);
-        padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-        margin-bottom: 1rem;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # Sidebar Navigation
-st.sidebar.title("📚 Menu")
-page = st.sidebar.radio("Go to", ["📥 Submit", "🌐 Translate", "📊 Stats", "🎁 Proverb of the Day", "⚙️ Settings"])
+with st.sidebar:
+    st.title("📚 Indian Wisdom")
+    page = st.radio("Navigate", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# ---- Submit Page ----
-if page == "📥 Submit":
-    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
-    st.subheader("📝 Submit a Local Proverb")
+# Sample Regions for Dropdown
+regions_list = [
+    "Andhra Pradesh", "Tamil Nadu", "Punjab","Telangana", "West Bengal", "Maharashtra",
+    "Karnataka", "Kerala", "Gujarat", "Assam", "Uttar Pradesh", "Odisha", "Bihar", "Rajasthan", "Delhi"
+]
+
+# Sample Extra Proverbs
+extra_proverbs = [
+    {"proverb": "Patience is the key to paradise.", "region": "Kashmir"},
+    {"proverb": "Even a hare will bite when it is cornered.", "region": "Tamil Nadu"},
+    {"proverb": "Words are like arrows, once loosed you cannot call them back.", "region": "Assam"},
+    {"proverb": "One thread for the needle, one for the knot.", "region": "Maharashtra"},
+    {"proverb": "He who digs a pit for others falls into it himself.", "region": "Gujarat"},
+    {"proverb": "A single tree does not make a forest.", "region": "Kerala"}
+]
+
+# Pages
+if page == "Submit":
+    st.header("📝 Submit a Local Proverb")
     proverb = st.text_area("Type the proverb in your language")
     audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
-    region = st.text_input("Enter your location or region")
+    region = st.selectbox("Select your region", regions_list)
 
     if st.button("Submit"):
         if proverb:
             core.save_proverb(proverb, region)
-            st.success("Proverb submitted successfully!")
+            st.success("✅ Proverb submitted successfully!")
         else:
-            st.warning("Please enter a proverb before submitting.")
+            st.warning("⚠️ Please enter a proverb before submitting.")
 
-# ---- Translate Page ----
-elif page == "🌐 Translate":
+elif page == "Translate":
     st.header("🌐 Translate a Proverb")
     text = st.text_input("Enter proverb to translate")
 
@@ -64,37 +59,46 @@ elif page == "🌐 Translate":
             result = translate.translate(text, lang_code)
             st.success(result)
         else:
-            st.warning("Please enter a proverb to translate.")
+            st.warning("⚠️ Please enter a proverb to translate.")
 
-# ---- Stats Page ----
-elif page == "📊 Stats":
+elif page == "Stats":
     st.header("📊 Region-wise Contributions")
-    try:
-        stats = core.get_stats()
-        if stats:
-            st.json(stats)
-        else:
-            st.info("No statistics available yet.")
-    except Exception as e:
-        st.error("Unable to load statistics.")
-
-# ---- Proverb of the Day Page ----
-elif page == "🎁 Proverb of the Day":
-    st.header("🌞 Proverb of the Day")
-
-    proverbs = core.load_proverbs()
-    if proverbs:
-        sampled = random.sample(proverbs, min(3, len(proverbs)))
-        for p in sampled:
-            with st.container():
-                st.markdown(f"<div class='proverb-card'><strong>🧾 {p['proverb']}</strong></div>", unsafe_allow_html=True)
-                if st.button("❤️ Like", key=p["proverb"]):
-                    vote.increment_vote(p["proverb"])
-                    st.success("You liked this proverb!")
+    stats = core.get_stats()
+    if stats:
+        st.bar_chart(stats)
     else:
-        st.info("No proverbs available.")
+        st.warning("ℹ️ No statistics available yet.")
 
-# ---- Settings Page ----
-elif page == "⚙️ Settings":
+elif page == "Proverb of the Day":
+    st.header("🎁 Today's Proverbs")
+    
+    # 1 from real data + 3 from static
+    primary = vote.get_random()
+    featured = [primary] if primary else []
+    featured += random.sample(extra_proverbs, 3)
+
+    for item in featured:
+        proverb_text = item["proverb"]
+        region = item.get("region", "India")
+        st.markdown(f"""
+            <div style='padding: 15px; background: rgba(255,255,255,0.8); border-radius: 10px; margin-bottom: 20px;'>
+                <h5 style='margin-bottom: 5px;'>{proverb_text}</h5>
+                <p style='font-size: 0.85rem; color: #555;'>📍 Region: {region}</p>
+                ❤️ <span style='font-size: 0.85rem; color: #777;'>Like</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+elif page == "Settings":
     st.header("⚙️ App Settings")
-    st.info("Settings panel coming soon.")
+    st.write("More app configuration settings coming soon.")
+
+# Transparent background with gradient overlay
+st.markdown("""
+<style>
+body {
+    background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('https://images.unsplash.com/photo-1584697964154-df6c03c99fb5?auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+}
+</style>
+""", unsafe_allow_html=True)
