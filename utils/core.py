@@ -1,7 +1,7 @@
 import json
 import os
 
-DATA_FILE = "proverbs.json"
+DATA_FILE = "data/proverbs.json"
 
 def load_proverbs():
     if os.path.exists(DATA_FILE):
