@@ -1,5 +1,4 @@
 streamlit
 deep-translator
-gTTS
-speechrecognition
-pandas
+pyttsx3
+gtts
