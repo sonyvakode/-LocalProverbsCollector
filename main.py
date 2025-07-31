@@ -1,85 +1,67 @@
+# main.py
 import streamlit as st
-from utils import core, translate, vote
-import os
+from utils.core import load_proverbs, save_proverb
+from utils.translate import translate_proverb
+from utils.vote import record_vote
+from utils.audio import speak_text
+from utils.language import get_supported_languages
 
-st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
+# Initialize session state
+if "proverbs" not in st.session_state:
+    st.session_state.proverbs = load_proverbs()
 
-# ---- Theme Styling ----
+# App layout
+st.set_page_config(page_title="Local Proverbs Collector", layout="centered")
+st.title("🌾 Local Proverbs Collector")
+
+# Sidebar configuration
 with st.sidebar:
-    st.title("Choose Mode")
-    theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
-    page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
+    st.header("⚙️ Settings")
+    theme = st.radio("Choose Theme", ["Light", "Dark"])
+    lang = st.selectbox("Select Language", get_supported_languages())
+    st.markdown("---")
+    st.write("🧠 AI-powered preservation of Indian wisdom.")
 
-# Inject theme CSS
+# Apply theme
 if theme == "Dark":
-    st.markdown(
-        "<style>body { background-color: #1e1e1e; color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
-elif theme == "Colorful":
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #f9d423, #ff4e50); color: white; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
-else:  # Light theme
-    st.markdown(
-        "<style>body { background: linear-gradient(to right, #e3ffe7, #d9e7ff); color: black; } .stApp { font-family: 'Segoe UI'; }</style>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("""
+        <style>
+        body {
+            background-color: #0E1117;
+            color: #FAFAFA;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-# ---- Pages ----
-if page == "Submit":
-    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
-    st.subheader("📝 Submit a Local Proverb")
-    proverb = st.text_area("Type the proverb in your language")
-    audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
-    region = st.text_input("Enter your location or region")
+# Input form
+with st.form("proverb_form"):
+    st.subheader("✍️ Add a New Proverb")
+    proverb = st.text_input("Enter a proverb in your language:")
+    meaning = st.text_area("Optional: Enter its meaning or context")
+    submitted = st.form_submit_button("Submit Proverb")
 
-    if st.button("Submit"):
-        if proverb:
-            core.save_proverb(proverb, region)
-            st.success("Proverb submitted successfully!")
-        else:
-            st.warning("Please enter a proverb before submitting.")
+    if submitted and proverb:
+        save_proverb(proverb, meaning, lang)
+        st.success("✅ Proverb saved successfully!")
+        st.session_state.proverbs = load_proverbs()  # Refresh list
 
-elif page == "Translate":
-    st.header("🌐 Translate a Proverb")
-    text = st.text_input("Enter proverb to translate")
-
-    lang_map = {
-        "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", "Bengali": "bn",
-        "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu", "Punjabi": "pa", "Urdu": "ur",
-        "Assamese": "as", "Odia": "or", "Sanskrit": "sa", "English": "en", "Arabic": "ar",
-        "French": "fr", "Spanish": "es", "German": "de", "Chinese": "zh-CN", "Japanese": "ja",
-        "Russian": "ru", "Korean": "ko", "Portuguese": "pt", "Italian": "it", "Turkish": "tr"
-    }
-
-    chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
-
-    if st.button("Translate"):
-        if text.strip():
-            lang_code = lang_map[chosen_lang]
-            result = translate.translate(text, lang_code)
-            st.success(result)
-        else:
-            st.warning("Please enter a proverb to translate.")
-
-elif page == "Stats":
-    st.header("📊 Region-wise Contributions")
-    stats = core.get_stats()
-    if stats:
-        st.json(stats)
-    else:
-        st.warning("No statistics available yet.")
-
-elif page == "Proverb of the Day":
-    st.header("🎁 Today's Proverb")
-    proverb = vote.get_random()
-    if proverb:
-        st.success(proverb)
-    else:
-        st.warning("No proverb found.")
-
-elif page == "Settings":
-    st.header("⚙️ App Settings")
-    st.write("More app configuration settings coming soon.")
+# Display proverbs
+st.subheader("📜 Collected Proverbs")
+if st.session_state.proverbs:
+    for i, item in enumerate(st.session_state.proverbs):
+        with st.expander(f"{item['text']} [{item['language']}]"):
+            st.write(f"**Meaning:** {item.get('meaning', 'N/A')}")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if st.button(f"🔊 Hear", key=f"tts_{i}"):
+                    speak_text(item['text'], item['language'])
+            with col2:
+                if st.button(f"🌐 Translate", key=f"trans_{i}"):
+                    translation = translate_proverb(item['text'], item['language'], 'en')
+                    st.info(f"Translation: {translation}")
+            with col3:
+                if st.button(f"👍 Vote", key=f"vote_{i}"):
+                    record_vote(i)
+                    st.success("Thank you for your vote!")
+else:
+    st.warning("No proverbs collected yet. Be the first to contribute!")
