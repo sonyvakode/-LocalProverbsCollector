@@ -1,5 +1,2 @@
-def get_languages():
-    return [
-        "Hindi", "Telugu", "Tamil", "Kannada", "Bengali", "Marathi", "Malayalam",
-        "Gujarati", "Punjabi", "Urdu", "Assamese", "Odia", "Sanskrit", "English"
-    ]
+def get_supported_languages():
+    return ["hi", "en", "mr", "ta", "te", "kn"]
