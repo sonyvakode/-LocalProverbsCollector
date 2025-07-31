@@ -11,11 +11,11 @@ with st.sidebar:
 
 # Sample Regions for Dropdown
 regions_list = [
-    "Andhra Pradesh", "Tamil Nadu", "Punjab","Telangana", "West Bengal", "Maharashtra",
+    "Andhra Pradesh", "Tamil Nadu", "Punjab", "Telangana","West Bengal", "Maharashtra",
     "Karnataka", "Kerala", "Gujarat", "Assam", "Uttar Pradesh", "Odisha", "Bihar", "Rajasthan", "Delhi"
 ]
 
-# Sample Extra Proverbs
+# Extra Sample Proverbs for display
 extra_proverbs = [
     {"proverb": "Patience is the key to paradise.", "region": "Kashmir"},
     {"proverb": "Even a hare will bite when it is cornered.", "region": "Tamil Nadu"},
@@ -71,17 +71,20 @@ elif page == "Stats":
 
 elif page == "Proverb of the Day":
     st.header("🎁 Today's Proverbs")
-    
-    # 1 from real data + 3 from static
+
+    # Safely handle case where get_random() returns a string
     primary = vote.get_random()
-    featured = [primary] if primary else []
+    featured = [{"proverb": primary, "region": "India"}] if primary else []
+
+    # Add 3 random extra proverbs
     featured += random.sample(extra_proverbs, 3)
 
     for item in featured:
-        proverb_text = item["proverb"]
+        proverb_text = item.get("proverb", "")
         region = item.get("region", "India")
+
         st.markdown(f"""
-            <div style='padding: 15px; background: rgba(255,255,255,0.8); border-radius: 10px; margin-bottom: 20px;'>
+            <div style='padding: 15px; background: rgba(255,255,255,0.85); border-radius: 10px; margin-bottom: 20px;'>
                 <h5 style='margin-bottom: 5px;'>{proverb_text}</h5>
                 <p style='font-size: 0.85rem; color: #555;'>📍 Region: {region}</p>
                 ❤️ <span style='font-size: 0.85rem; color: #777;'>Like</span>
@@ -92,11 +95,12 @@ elif page == "Settings":
     st.header("⚙️ App Settings")
     st.write("More app configuration settings coming soon.")
 
-# Transparent background with gradient overlay
+# Add Transparent Background with inline CSS (no file used)
 st.markdown("""
 <style>
 body {
-    background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), url('https://images.unsplash.com/photo-1584697964154-df6c03c99fb5?auto=format&fit=crop&w=1600&q=80');
+    background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
+                url('https://images.unsplash.com/photo-1549887534-4b6d3e01f8d1?auto=format&fit=crop&w=1600&q=80');
     background-size: cover;
     background-attachment: fixed;
 }
