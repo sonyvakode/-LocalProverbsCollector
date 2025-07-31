@@ -4,6 +4,22 @@ import os
 
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
+# ---- Glowing Title Styling ----
+st.markdown("""
+    <style>
+    .glow-text {
+        font-size: 45px;
+        font-weight: bold;
+        text-align: center;
+        color: #ffffff;
+        text-shadow: 0 0 5px #FFD700, 0 0 10px #FFA500, 0 0 15px #FF4500, 0 0 20px #FF8C00;
+        font-family: 'Segoe UI', sans-serif;
+        padding: 20px 0;
+    }
+    </style>
+    <div class="glow-text">✨ Indian Wisdom ✨</div>
+""", unsafe_allow_html=True)
+
 # ---- Theme Styling ----
 with st.sidebar:
     st.title("Choose Mode")
@@ -29,7 +45,6 @@ else:  # Light theme
 
 # ---- Pages ----
 if page == "Submit":
-    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
     proverb = st.text_area("Type the proverb in your language")
     audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
@@ -66,14 +81,11 @@ elif page == "Translate":
 
 elif page == "Stats":
     st.header("📊 Region-wise Contributions")
-    try:
-        stats = core.get_stats()
-        if stats:
-            st.json(stats)
-        else:
-            st.warning("No statistics available yet.")
-    except Exception as e:
-        st.error("Error loading statistics. Please check your data file.")
+    stats = core.get_stats()
+    if stats:
+        st.json(stats)
+    else:
+        st.warning("No statistics available yet.")
 
 elif page == "Proverb of the Day":
     st.header("🎁 Today's Proverb")
@@ -81,8 +93,8 @@ elif page == "Proverb of the Day":
     if proverb:
         st.success(proverb)
         if st.button("❤️ Like"):
-            vote.increment_like(proverb)
-            st.toast("You liked this proverb!", icon="❤️")
+            vote.increment_vote(proverb)
+            st.toast("Thanks for liking!", icon="❤️")
     else:
         st.warning("No proverb found.")
 
