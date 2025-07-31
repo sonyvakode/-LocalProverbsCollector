@@ -1,36 +1,49 @@
 import streamlit as st
 from utils import core, translate, vote
-import os
 
+# Page config
 st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-# ---- Sidebar ----
+# Image path (from your uploaded file)
+background_image_url = "https://raw.githubusercontent.com/viswamsundar/indian-proverbs/main/assets/bg_proverbs.png"
+
+# Inject custom CSS
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("{background_image_url}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+    .main {{
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 2rem;
+        border-radius: 12px;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Sidebar
 with st.sidebar:
     st.title("Choose Mode")
     theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
     page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# ---- Background Styling with Your Image ----
-background_url = "https://cdn.pixabay.com/photo/2017/03/01/23/19/bible-2110439_1280.jpg"  # fallback if needed
-uploaded_image_path = "/mnt/data/95b63969-62d1-491c-8833-3b9513a72f09.png"
-
-st.markdown(f"""
+# THEME: simple font styling (without glowing)
+st.markdown("""
     <style>
-    body {{
-        background: url('{uploaded_image_path}') no-repeat center center fixed;
-        background-size: cover;
-    }}
-    .stApp {{
-        background-color: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 10px;
-        padding: 20px;
+    h1, h2, h3, h4 {{
         font-family: 'Segoe UI', sans-serif;
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# ---- Pages ----
+# Pages
 if page == "Submit":
     st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
