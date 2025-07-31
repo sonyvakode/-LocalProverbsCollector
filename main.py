@@ -1,54 +1,62 @@
 import streamlit as st
-from utils import core, vote, audio, translate
+from utils import core, vote, translate, language, audio
 
-st.set_page_config(page_title="Indian Wisdom: Local Proverbs", layout="centered")
+st.set_page_config(page_title="Indian Wisdom: Local Proverbs Collector", layout="wide")
+st.title("🪔 Indian Wisdom: Local Proverbs Collector")
 
-st.title("📚 Indian Wisdom: Local Proverbs Collector")
+# Sidebar Navigation
+st.sidebar.title("☰ Menu")
+page = st.sidebar.radio("Go to", ["📥 Submit Proverb", "📊 Vote", "🌐 Translate", "🎤 Record Audio"])
 
-# Collapsible slide-like section using expander
-with st.expander("➕ Submit a Proverb"):
-    st.subheader("📝 Add a New Proverb")
-    proverb = st.text_input("Enter a local proverb")
-    region = st.text_input("Enter the region/language of this proverb")
-
+# --- Submit Proverb ---
+if page == "📥 Submit Proverb":
+    st.header("📥 Submit a Proverb")
+    proverb = st.text_input("Enter a proverb")
+    region = st.selectbox("Select the region/language", language.get_languages())
     if st.button("Submit"):
-        if proverb and region:
-            core.save_proverb(proverb, region)
-            st.success("Proverb saved successfully!")
+        if proverb.strip() and region:
+            core.save_proverb(proverb.strip(), region)
+            st.success("Proverb submitted successfully!")
         else:
-            st.warning("Please enter both proverb and region.")
+            st.warning("Please fill all fields.")
 
-with st.expander("📊 Vote for a Proverb"):
-    st.subheader("🗳️ Vote for a Proverb")
-    proverbs = [p["proverb"] for p in core.load_proverbs()]
-    selected = st.selectbox("Choose a proverb to vote for", proverbs)
+# --- Vote for Proverb ---
+elif page == "📊 Vote":
+    st.header("📊 Vote for a Proverb")
+    proverbs = core.load_proverbs()
+    if not proverbs:
+        st.info("No proverbs found.")
+    else:
+        selected = st.selectbox("Choose a proverb to vote for", [p['proverb'] for p in proverbs])
+        if st.button("Vote"):
+            vote.increment_vote(selected)
+            st.success("Thanks for your vote!")
 
-    if st.button("Vote"):
-        vote.vote_for_proverb(selected)
-        st.success("Thank you for voting!")
-
-with st.expander("🌐 Translate a Proverb"):
-    st.subheader("🌍 Translate a Proverb")
-    text = st.text_input("Enter text to translate")
-    target_lang = st.selectbox("Translate to", ["Hindi", "Telugu", "Tamil", "Kannada", "Bengali", "English"])
-
+# --- Translate Proverb ---
+elif page == "🌐 Translate":
+    st.header("🌐 Translate a Proverb")
+    input_text = st.text_input("Enter text to translate")
+    target_lang = st.selectbox("Translate to", language.get_languages())
     if st.button("Translate"):
-        if text:
-            result = translate.mock_translate(text, target_lang)
-            st.info(f"Translated '{text}' to [{target_lang}]: {result}")
+        if input_text.strip() and target_lang:
+            translated = translate.mock_translate(input_text.strip(), target_lang)
+            st.info(f"Translated '{input_text}' to [{target_lang}]: {translated}")
         else:
-            st.warning("Please enter text to translate.")
+            st.warning("Please enter text and select language.")
 
-with st.expander("📈 View Statistics"):
-    st.subheader("📊 Proverbs per Region")
+# --- Record Audio ---
+elif page == "🎤 Record Audio":
+    st.header("🎤 Record a Proverb Audio")
+    audio_bytes = st.file_uploader("Upload recorded proverb audio (MP3 or WAV)", type=["mp3", "wav"])
+    if audio_bytes:
+        audio.save_audio_file(audio_bytes)
+        st.success("Audio uploaded and saved successfully!")
+        st.audio(audio_bytes)
+
+# Optional region stats
+st.sidebar.markdown("---")
+if st.sidebar.checkbox("📈 Show Region Stats"):
+    st.sidebar.subheader("Region-wise Proverb Count")
     stats = core.get_stats()
     for region, count in stats.items():
-        st.write(f"**{region}**: {count} proverb(s)")
-
-with st.expander("🎙️ Record Audio (Optional)"):
-    st.subheader("🎧 Record Your Proverb")
-    st.write("Upload an audio file of the proverb (WAV/MP3 format).")
-    uploaded = st.file_uploader("Upload Audio", type=["wav", "mp3"])
-    if uploaded:
-        audio.save_audio_file(uploaded)
-        st.success("Audio uploaded successfully!")
+        st.sidebar.write(f"{region}: {count}")
