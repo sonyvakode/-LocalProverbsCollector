@@ -34,5 +34,6 @@ India is home to thousands of languages and dialects, each rich with proverbs th
 ```bash
 git clone https://github.com/sonyvakode/-LocalProverbsCollector
 cd local-proverbs-collector
+deep-translator
 pip install -r requirements.txt
 streamlit run app.py
