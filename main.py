@@ -1,97 +1,84 @@
 import streamlit as st
-from utils import core, vote, translate
-from PIL import Image
-import base64
-import random
+from utils import core, translate, vote
 
-# Background setup
-def set_custom_bg(png_file):
-    with open(png_file, "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    st.markdown(f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/png;base64,{data}");
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+st.set_page_config(page_title="Indian Wisdom", layout="wide", initial_sidebar_state="expanded")
 
-set_custom_bg("streamlit_bg_gradient.png")  # Use your new image here
+# ---- Choose your preferred background URL here ----
+background_url = "https://images.unsplash.com/photo-1683078142484-2c7aec5ae048?auto=format&fit=crop&w=1950&q=80"  # pastel blur
+# background_url = "https://images.unsplash.com/photo-1683078243370-ab777dd24f11?auto=format&fit=crop&w=1950&q=80"  # pastel orange-pink
+# background_url = "https://images.unsplash.com/photo-1683078235170-8b3bcd1549cb?auto=format&fit=crop&w=1950&q=80"  # yellow-green mix
+# background_url = "https://images.unsplash.com/photo-1683078264564-0bd24fcd74f1?auto=format&fit=crop&w=1950&q=80"  # beige-white bokeh
 
-# Sidebar Navigation
-st.sidebar.title("Go to")
-section = st.sidebar.radio("", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
+st.markdown(f"""
+    <style>
+    body {{
+        background: url("{background_url}") no-repeat center center fixed;
+        background-size: cover;
+    }}
+    .block-container {{
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 2rem;
+        border-radius: 12px;
+    }}
+    </style>
+""", unsafe_allow_html=True)
 
-# Title
-st.markdown("## 🪔 Indian Wisdom: Local Proverbs Collector")
+with st.sidebar:
+    st.title("Choose Mode")
+    theme = st.radio("Choose Theme", ["Light", "Dark", "Colorful"])
+    page = st.radio("Go to", ["Submit", "Translate", "Stats", "Proverb of the Day", "Settings"])
 
-# Submit Section
-if section == "Submit":
+if page == "Submit":
+    st.header("🪔 Indian Wisdom: Local Proverbs Collector")
     st.subheader("📝 Submit a Local Proverb")
     proverb = st.text_area("Type the proverb in your language")
-    audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["wav", "mp3"])
-    location = st.text_input("Enter your location or region")
+    audio = st.file_uploader("Or upload an audio file (WAV/MP3)", type=["mp3", "wav"])
+    region = st.text_input("Enter your location or region")
     if st.button("Submit"):
-        core.save_proverb(proverb, location, audio)
-        st.success("✅ Proverb submitted successfully!")
+        if proverb:
+            core.save_proverb(proverb, region)
+            st.success("Proverb submitted successfully!")
+        else:
+            st.warning("Please enter a proverb before submitting.")
 
-# Translate Section
-elif section == "Translate":
-    st.subheader("🌐 Translate a Proverb")
-    untranslated = core.get_untranslated()
-    if untranslated:
-        to_translate = random.choice(untranslated)
-        st.write("Translate this proverb:")
-        st.info(to_translate["text"])
-        translation = st.text_input("Enter translation:")
-        if st.button("Submit Translation"):
-            translate.save_translation(to_translate["id"], translation)
-            st.success("✅ Translation saved.")
-    else:
-        st.success("🎉 All proverbs are translated!")
+elif page == "Translate":
+    st.header("🌐 Translate a Proverb")
+    text = st.text_input("Enter proverb to translate")
+    lang_map = {
+        "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", 
+        "Bengali": "bn", "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu", 
+        "Punjabi": "pa", "Urdu": "ur", "Assamese": "as", "Odia": "or", "Sanskrit": "sa", 
+        "English": "en", "Arabic": "ar", "French": "fr", "Spanish": "es", 
+        "German": "de", "Chinese": "zh-CN", "Japanese": "ja", "Russian": "ru", 
+        "Korean": "ko", "Portuguese": "pt", "Italian": "it", "Turkish": "tr"
+    }
+    chosen_lang = st.selectbox("🎯 Target language", list(lang_map.keys()))
+    if st.button("Translate"):
+        if text.strip():
+            result = translate.translate(text, lang_map[chosen_lang])
+            st.success(result)
+        else:
+            st.warning("Please enter a proverb to translate.")
 
-# Stats Section
-elif section == "Stats":
-    st.subheader("📊 App Statistics")
+elif page == "Stats":
+    st.header("📊 Region-wise Contributions")
     stats = core.get_stats()
-    st.write(f"📌 Total Proverbs: {stats['total']}")
-    st.write(f"🌍 Translated: {stats['translated']}")
-    st.write(f"🔈 Audio Uploads: {stats['audio']}")
+    if stats:
+        st.json(stats)
+    else:
+        st.warning("No statistics available yet.")
 
-# Proverb of the Day Section
-elif section == "Proverb of the Day":
-    st.subheader("🎁 Proverb of the Day")
+elif page == "Proverb of the Day":
+    st.header("🎁 Proverb of the Day")
+    proverb = vote.get_random()
+    if proverb:
+        st.success(proverb)
+        if st.button("❤️ Like"):
+            vote.increment_vote(proverb)
+            st.toast("Thanks for liking!", icon="❤️")
+    else:
+        st.warning("No proverb found.")
 
-    # Sample list
-    proverbs = [
-        "A stitch in time saves nine.",
-        "Actions speak louder than words.",
-        "The early bird catches the worm.",
-        "A journey of a thousand miles begins with a single step.",
-        "Wisdom is wealth.",
-        "Even monkeys fall from trees.",
-        "Words are the voice of the heart.",
-        "Patience is a tree whose root is bitter, but its fruit is sweet.",
-        "No smoke without fire.",
-        "A coconut shell seems big to a louse."
-    ]
-
-    daily = random.sample(proverbs, 3)
-    for prov in daily:
-        st.markdown(f"""
-        <div style="background-color: rgba(255, 255, 200, 0.8); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-            <strong>{prov}</strong>
-            <br><br>
-            <div style='text-align: right'>
-                ❤️ <button style='border: none; background: none; font-size: 1.1em; cursor: pointer;'>Like</button>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# Settings Section
-elif section == "Settings":
-    st.subheader("⚙️ Settings")
-    st.info("Theme and customization options will be added soon.")
+elif page == "Settings":
+    st.header("⚙️ App Settings")
+    st.write("More app configuration settings coming soon.")
