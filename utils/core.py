@@ -1,35 +1,25 @@
-import os
 import json
-from datetime import datetime
+from pathlib import Path
+from collections import Counter
 
-PROVERB_FILE = "data/proverbs.json"
+DATA_FILE = Path("proverbs.json")
 
 def load_proverbs():
-    if not os.path.exists(PROVERB_FILE):
-        return []
-    with open(PROVERB_FILE, "r", encoding="utf-8") as f:
-        try:
+    if DATA_FILE.exists():
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
-        except json.JSONDecodeError:
-            return []
+    return []
 
 def save_proverb(proverb, region):
     data = load_proverbs()
-    entry = {
-        "proverb": proverb,
-        "region": region,
-        "timestamp": datetime.now().isoformat(),
-        "votes": 0
-    }
-    data.append(entry)
-    os.makedirs("data", exist_ok=True)
-    with open(PROVERB_FILE, "w", encoding="utf-8") as f:
+    for entry in data:
+        if entry["proverb"] == proverb:
+            return  # Avoid duplicates
+    data.append({"proverb": proverb, "region": region, "votes": 0})
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def get_stats():
     data = load_proverbs()
-    stats = {}
-    for entry in data:
-        region = entry.get("region", "Unknown")
-        stats[region] = stats.get(region, 0) + 1
-    return stats
+    counts = Counter(p["region"] for p in data)
+    return dict(counts)
