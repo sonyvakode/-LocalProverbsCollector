@@ -1,17 +1,13 @@
-# utils/audio.py
-
 import os
-from datetime import datetime
+import hashlib
 
-def save_audio(file, region):
-    folder = os.path.join("data", "audio")
-    os.makedirs(folder, exist_ok=True)
+AUDIO_DIR = "data/audio"
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{region}_{timestamp}_{file.name}"
-    filepath = os.path.join(folder, filename)
+def save_audio_file(uploaded_file, proverb_text):
+    os.makedirs(AUDIO_DIR, exist_ok=True)
+    hash_id = hashlib.md5(proverb_text.encode('utf-8')).hexdigest()
+    filename = f"{hash_id}_{uploaded_file.name}"
+    filepath = os.path.join(AUDIO_DIR, filename)
 
     with open(filepath, "wb") as f:
-        f.write(file.read())
-
-    return filepath
+        f.write(uploaded_file.read())
