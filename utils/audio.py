@@ -1,9 +1,16 @@
-import os
-import shutil
+# utils/audio.py
+import streamlit as st
 
-def save_audio(uploaded_file, proverb_text):
-    os.makedirs("data/audio", exist_ok=True)
-    filename = f"{proverb_text[:30].strip().replace(' ', '_')}_{uploaded_file.name}"
-    filepath = os.path.join("data/audio", filename)
-    with open(filepath, "wb") as f:
-        shutil.copyfileobj(uploaded_file, f)
+def record_audio_ui(proverbs):
+    if not proverbs:
+        st.warning("No proverbs available to record.")
+        return
+
+    selected = st.selectbox("Select a proverb to record", [p["proverb"] for p in proverbs])
+    audio_file = st.file_uploader("Upload audio recording for the proverb", type=["mp3", "wav"])
+
+    if st.button("Submit Recording"):
+        if audio_file:
+            st.success(f"Audio for '{selected}' uploaded successfully! (Mock)")
+        else:
+            st.error("Please upload a valid audio file.")
