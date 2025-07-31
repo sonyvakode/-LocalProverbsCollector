@@ -1,10 +1,9 @@
-from pathlib import Path
+import os
 
-AUDIO_DIR = Path("audio_uploads")
-AUDIO_DIR.mkdir(exist_ok=True)
+AUDIO_DIR = "audio_uploads"
 
-def save_audio_file(uploaded_file):
-    file_path = AUDIO_DIR / uploaded_file.name
+def save_audio_file(file):
+    os.makedirs(AUDIO_DIR, exist_ok=True)
+    file_path = os.path.join(AUDIO_DIR, file.name)
     with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    return str(file_path)
+        f.write(file.getbuffer())
