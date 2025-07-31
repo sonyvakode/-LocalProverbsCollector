@@ -1,12 +1,11 @@
-import random
-import os
+import json
+from utils.core import load_proverbs
 
-def get_random():
-    path = "data/proverbs.txt"
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        lines = [line.strip() for line in f if line.strip()]
-    if not lines:
-        return None
-    return random.choice(lines)
+DATA_FILE = "data/proverbs.json"
+
+def record_vote(index):
+    proverbs = load_proverbs()
+    if 0 <= index < len(proverbs):
+        proverbs[index]["votes"] = proverbs[index].get("votes", 0) + 1
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(proverbs, f, ensure_ascii=False, indent=2)
