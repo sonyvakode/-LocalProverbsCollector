@@ -1,22 +1,19 @@
-import random
-from .core import load_proverbs, update_metric
+import json
 
-def increment_vote(proverb_text):
-    update_metric(proverb_text, "votes")
+DATA_FILE = "data/proverbs.json"
 
-def increment_like(proverb_text):
-    update_metric(proverb_text, "likes")
+def get_all():
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
 
-def increment_save(proverb_text):
-    update_metric(proverb_text, "saves")
-
-def increment_view(proverb_text):
-    update_metric(proverb_text, "views")
-
-def get_random():
-    proverbs = load_proverbs()
-    if not proverbs:
-        return None
-    selected = random.choice(proverbs)
-    increment_view(selected["proverb"])
-    return selected["proverb"]
+def like_proverb(target_proverb):
+    data = get_all()
+    for item in data:
+        if item["proverb"] == target_proverb:
+            item["likes"] = item.get("likes", 0) + 1
+            break
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
