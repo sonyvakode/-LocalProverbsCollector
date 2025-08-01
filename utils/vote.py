@@ -1,23 +1,18 @@
-import json
-import os
-
-VOTE_FILE = "data/votes.json"
-
-def _load_votes():
-    if not os.path.exists(VOTE_FILE):
-        return {}
-    with open(VOTE_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def _save_votes(votes):
-    os.makedirs("data", exist_ok=True)
-    with open(VOTE_FILE, "w", encoding="utf-8") as f:
-        json.dump(votes, f, indent=2)
-
-def like_proverb(proverb):
-    votes = _load_votes()
-    votes[proverb] = votes.get(proverb, 0) + 1
-    _save_votes(votes)
+from . import core
 
 def get_all():
-    return _load_votes()
+    return core.load_proverbs()
+
+def like_proverb(text):
+    proverbs = core.load_proverbs()
+    for p in proverbs:
+        if p["text"] == text:
+            p["likes"] += 1
+            break
+    _save_all(proverbs)
+
+def _save_all(proverbs):
+    with open("data/proverbs.txt", "w", encoding="utf-8") as f:
+        for p in proverbs:
+            line = f"{p['text']}|{p['region']}|{p['language']}|{p['likes']}|{p['views']}\n"
+            f.write(line)
