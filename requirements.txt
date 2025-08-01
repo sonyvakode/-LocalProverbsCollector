@@ -2,3 +2,4 @@ streamlit
 deep-translator
 pyttsx3
 gtts
+googletrans==4.0.0-rc1
