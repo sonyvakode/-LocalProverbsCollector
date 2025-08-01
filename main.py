@@ -1,17 +1,16 @@
 import streamlit as st
 import random
-import base64
 import time
+import base64
 from utils import core, translate, vote
 
-# Updated background setup with light overlay
 def set_background():
     image_url = "https://t4.ftcdn.net/jpg/08/04/67/63/360_F_804676330_hVxnVs6vGpu1uL6WmNL6qxSApym3zxUF.jpg"
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url("{image_url}");
+            background-image: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url("{image_url}");
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -22,68 +21,50 @@ def set_background():
         }}
         </style>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
-# Proverb of the Day section with rotation and like button
 def show_proverb_of_the_day():
-    st.subheader("📜 Proverb of the Day")
+    try:
+        with open("data/proverbs.txt", "r", encoding="utf-8") as f:
+            all_proverbs = [line.strip() for line in f if line.strip()]
+        if not all_proverbs:
+            st.warning("No proverbs available.")
+            return
+        proverb_line = random.choice(all_proverbs)
+        text, region, lang, views, likes = proverb_line.split("|")
 
-    all_proverbs = vote.get_all()
-    if not all_proverbs:
-        st.info("No proverbs available yet. Please submit one!")
-        return
+        st.markdown("## 🌞 Proverb of the Day")
+        st.markdown(f"**📝 Proverb**: {text}")
+        st.markdown(f"🌐 **Language**: {lang} | 📍 **Region**: {region}")
+        st.markdown(f"👁️ Views: {views} | ❤️ Likes: {likes}")
+    except Exception as e:
+        st.error(f"Failed to load proverb of the day: {e}")
 
-    proverb = random.choice(all_proverbs)
-    proverb_text = proverb.get("text", "")
-    region = proverb.get("region", "Unknown")
-    lang = proverb.get("language", "Unknown")
-    likes = proverb.get("likes", 0)
-    views = proverb.get("views", 0)
-
-    st.markdown(f"""
-    <div style='border: 1px solid #ccc; padding: 1em; border-radius: 10px; background-color: rgba(255, 255, 255, 0.8);'>
-        <p style='font-size: 1.2em;'><strong>{proverb_text}</strong></p>
-        <small>📍 {region} | 🌐 {lang}</small><br>
-        ❤️ {likes} &nbsp;&nbsp; 👁️ {views}
-    </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("❤️ Like this proverb"):
-        vote.like_proverb(proverb_text)
-        st.success("Liked!")
-
-# Main app
 def main():
     set_background()
+    st.title("🪔 Indian Wisdom: Local Proverbs Collector")
 
-    st.title("🌸 Indian Wisdom: Local Proverbs Collector")
+    show_proverb_of_the_day()
 
-    menu = ["🏠 Home", "➕ Submit", "🌐 Translate", "📊 Stats"]
-    choice = st.sidebar.radio("Navigate", menu)
+    st.header("➕ Submit a New Proverb")
+    proverb = st.text_input("Enter a proverb")
+    region = st.selectbox("Select region", ["Tamil Nadu", "Kerala", "Maharashtra", "Gujarat", "Punjab"])
+    language = st.selectbox("Language", ["Hindi", "English", "Tamil", "Telugu", "Gujarati"])
+    if st.button("Submit"):
+        if proverb:
+            core.save_proverb(proverb, region, language)
+            st.success("Proverb saved successfully!")
 
-    if choice == "🏠 Home":
-        show_proverb_of_the_day()
+    st.header("📊 Stats")
+    stats = core.load_stats()
+    st.bar_chart(stats)
 
-    elif choice == "➕ Submit":
-        st.subheader("Submit a Proverb")
-        text = st.text_input("Enter your proverb")
-        region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central"])
-        language = st.selectbox("Language", ["Hindi", "Tamil", "Telugu", "Malayalam", "Kannada", "Gujarati", "Punjabi"])
-        if st.button("Submit"):
-            if text:
-                core.save_proverb(text, region, language)
-                st.success("Proverb submitted successfully!")
-            else:
-                st.warning("Please enter a proverb.")
+    st.header("🌐 Translate a Proverb")
+    translate.translate_interface()
 
-    elif choice == "🌐 Translate":
-        st.subheader("Translate a Proverb")
-        translate.translate_proverb()
-
-    elif choice == "📊 Stats":
-        st.subheader("Proverb Stats")
-        core.load_stats()
+    st.header("👍 Vote for Proverbs")
+    vote.vote_interface()
 
 if __name__ == "__main__":
     main()
