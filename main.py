@@ -1,93 +1,94 @@
 import streamlit as st
-import os
-import base64
 import random
-from utils import core, translate, vote, audio
+import base64
+import time
+from utils import core, translate, vote
 
-# === Set Page Config ===
-st.set_page_config(page_title="Indian Wisdom", layout="centered")
-
-# === Set Background from ONLINE URL (safe for Streamlit Cloud) ===
+# Updated background setup with light overlay
 def set_background():
     image_url = "https://t4.ftcdn.net/jpg/08/04/67/63/360_F_804676330_hVxnVs6vGpu1uL6WmNL6qxSApym3zxUF.jpg"
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: url("{image_url}");
+            background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url("{image_url}");
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            color: white;
+            background-position: center;
+        }}
+
+        h1, h2, h3, .stButton>button, .css-10trblm, .css-1v3fvcr {{
+            color: #000 !important;
         }}
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-set_background()
-
-# === Sidebar Navigation ===
-page = st.sidebar.radio("Navigate", ["🏠 Home", "📝 Submit", "🌐 Translate", "📊 Stats"])
-
-# === HOME PAGE ===
-if page == "🏠 Home":
-    st.title("🪔 Indian Wisdom: Local Proverbs Collector")
-
-    if not os.path.exists("data/proverbs.txt"):
-        open("data/proverbs.txt", "w", encoding="utf-8").close()
-
-    with open("data/proverbs.txt", "r", encoding="utf-8") as f:
-        proverbs = [line.strip().split(" | ")[0] for line in f if line.strip()]
-
-    if proverbs:
-        proverb = random.choice(proverbs)
-        st.markdown(f"### 🌟 Proverb of the Day:\n> *{proverb}*")
+# Show rotating proverbs with like button
+def show_proverb_of_the_day():
+    st.markdown("### 🌟 Proverb of the Day:")
+    all_proverbs = vote.get_all()
+    if all_proverbs:
+        proverb = random.choice(all_proverbs)
+        st.markdown(f"<p style='font-size: 24px;'>{proverb['text']}</p>", unsafe_allow_html=True)
 
         if st.button("❤️ Like this proverb"):
-            vote.like_proverb(proverb)
-
-        likes = vote.get_all().get(proverb, 0)
-        st.caption(f"👍 Likes: {likes}")
+            vote.like_proverb(proverb["text"])
+        st.write(f"👍 Likes: {proverb.get('likes', 0)}")
     else:
-        st.info("No proverbs submitted yet.")
+        st.write("No proverbs available yet. Submit one!")
 
-# === SUBMIT PAGE ===
-elif page == "📝 Submit":
-    st.header("📥 Submit a Local Proverb")
-    proverb = st.text_area("Type the proverb in your language")
-    region = st.text_input("Enter your location or region")
-    audio_file = st.file_uploader("🎙️ Or upload an audio file", type=["mp3", "wav"])
-
-    if audio_file:
-        proverb = audio.transcribe_audio(audio_file)
-        st.success(f"Transcribed Proverb: {proverb}")
-
+# Submit a new proverb
+def submit_proverb():
+    st.header("📤 Submit a Proverb")
+    proverb = st.text_input("Enter your local proverb:")
+    region = st.selectbox("Select region:", ["North", "South", "East", "West", "Central", "North-East"])
     if st.button("Submit"):
-        if proverb:
-            core.save_proverb(proverb, region)
-            st.success("Proverb submitted successfully!")
+        if proverb.strip():
+            core.save_proverb(proverb.strip())
+            st.success("Proverb saved successfully!")
         else:
-            st.warning("Please enter a proverb before submitting.")
+            st.warning("Proverb cannot be empty.")
 
-# === TRANSLATE PAGE ===
-elif page == "🌐 Translate":
+# Translate section
+def translate_section():
     st.header("🌐 Translate a Proverb")
-    text = st.text_input("Enter proverb to translate")
-    target = st.selectbox("Choose language", ["Hindi", "Tamil", "Telugu", "Kannada", "Bengali"])
-
+    text = st.text_input("Enter proverb to translate:")
     if st.button("Translate"):
-        if text:
-            translated = translate.translate_proverb(text, target)
-            st.success(f"Translation ({target}): {translated}")
+        if text.strip():
+            translated = translate.translate_text(text)
+            st.write("Translated Proverb:", translated)
         else:
-            st.warning("Enter some text to translate.")
+            st.warning("Please enter text to translate.")
 
-# === STATS PAGE ===
-elif page == "📊 Stats":
-    st.header("📊 Proverbs by Region")
+# Statistics section
+def stats_section():
+    st.header("📊 Proverbs Stats")
     stats = core.load_stats()
-    if stats["regions"]:
-        st.bar_chart(stats["regions"])
+    if stats:
+        st.bar_chart(stats)
     else:
-        st.info("No data yet. Submit some proverbs to see stats.")
+        st.info("No data to display yet.")
+
+# Page router
+def main():
+    st.set_page_config(page_title="Indian Wisdom", layout="wide")
+    set_background()
+    st.sidebar.title("Navigate")
+    page = st.sidebar.radio("Go to", ["Home", "Submit", "Translate", "Stats"])
+
+    st.markdown("<h1 style='text-align: center;'>🪔 Indian Wisdom: Local Proverbs Collector</h1>", unsafe_allow_html=True)
+    
+    if page == "Home":
+        show_proverb_of_the_day()
+    elif page == "Submit":
+        submit_proverb()
+    elif page == "Translate":
+        translate_section()
+    elif page == "Stats":
+        stats_section()
+
+if __name__ == "__main__":
+    main()
