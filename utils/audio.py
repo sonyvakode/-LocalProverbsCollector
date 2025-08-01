@@ -1,9 +1,17 @@
-import os
+import speech_recognition as sr
+import tempfile
 
-AUDIO_DIR = "data/audio"
+def transcribe_audio(audio_file):
+    recognizer = sr.Recognizer()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
+        temp_audio.write(audio_file.read())
+        temp_audio.flush()
 
-def save_audio_file(audio_file):
-    os.makedirs(AUDIO_DIR, exist_ok=True)
-    file_path = os.path.join(AUDIO_DIR, audio_file.name)
-    with open(file_path, "wb") as f:
-        f.write(audio_file.read())
+        with sr.AudioFile(temp_audio.name) as source:
+            audio_data = recognizer.record(source)
+            try:
+                return recognizer.recognize_google(audio_data, language="en-IN")
+            except sr.UnknownValueError:
+                return "Could not understand the audio."
+            except sr.RequestError:
+                return "Error reaching the speech recognition service."
