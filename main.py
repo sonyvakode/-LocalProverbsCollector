@@ -7,25 +7,25 @@ from utils import core, translate, vote, audio
 # === Set Page Config ===
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# === Set Background ===
-def set_background(image_file):
-    with open(image_file, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
+# === Set Background from ONLINE URL (safe for Streamlit Cloud) ===
+def set_background():
+    image_url = "https://t4.ftcdn.net/jpg/08/04/67/63/360_F_804676330_hVxnVs6vGpu1uL6WmNL6qxSApym3zxUF.jpg"
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: url("data:image/jpg;base64,{encoded}");
+            background-image: url("{image_url}");
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
+            color: white;
         }}
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-set_background("background.jpg")
+set_background()
 
 # === Sidebar Navigation ===
 page = st.sidebar.radio("Navigate", ["🏠 Home", "📝 Submit", "🌐 Translate", "📊 Stats"])
