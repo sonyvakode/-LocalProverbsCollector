@@ -1,110 +1,106 @@
 import streamlit as st
 import random
 import time
+import os
+import base64
+import matplotlib.pyplot as plt
 from utils import core, vote, translate, audio
 
+# === Page Config ===
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
+st.markdown("<h1 style='text-align:center; color: white;'>🪔 Indian Wisdom: Local Proverbs Collector</h1>", unsafe_allow_html=True)
 
-# ---- Background via base64 URL (no assets folder) ----
-bg_url = "https://t4.ftcdn.net/jpg/08/04/67/63/360_F_804676330_hVxnVs6vGpu1uL6WmNL6qxSApym3zxUF.jpg"
-st.markdown(f"""
+# === Background ===
+def set_background():
+    img_url = "https://t4.ftcdn.net/jpg/08/04/67/63/360_F_804676330_hVxnVs6vGpu1uL6WmNL6qxSApym3zxUF.jpg"
+    st.markdown(f"""
     <style>
-        .stApp {{
-            background-image: url('{bg_url}');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-position: center;
-            font-family: 'Segoe UI', sans-serif;
-        }}
+    .stApp {{
+        background-image: url("{img_url}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        color: white;
+    }}
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ---- App Title ----
-st.markdown("<h1 style='text-align: center;'>🪔 Indian Wisdom: Local Proverbs Collector</h1>", unsafe_allow_html=True)
+set_background()
+
+# === Load Proverbs File ===
+os.makedirs("data", exist_ok=True)
+if not os.path.exists("data/proverbs.txt"):
+    with open("data/proverbs.txt", "w", encoding="utf-8") as f:
+        pass
+
+with open("data/proverbs.txt", "r", encoding="utf-8") as f:
+    all_proverbs = [line.strip().split(" | ")[0] for line in f if line.strip()]
+
+# === Proverb of the Day Section ===
+st.subheader("🌟 Proverb of the Day")
+
+if all_proverbs:
+    current = random.choice(all_proverbs)
+    st.markdown(f"<div style='font-size: 22px; background-color: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px;'>{current}</div>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        if st.button("❤️", key=f"like_{current}"):
+            vote.like_proverb(current)
+    with col2:
+        likes = vote.get_all().get(current, 0)
+        st.caption(f"Likes: {likes}")
+else:
+    st.info("No proverbs saved yet.")
+
 st.markdown("---")
 
-# ---- Navigation ----
-page = st.sidebar.radio("Go to", ["Proverb of the Day", "Submit", "Translate", "Stats"])
+# === Submit New Proverb ===
+st.subheader("📝 Submit a Proverb")
+with st.form("submit_form"):
+    proverb = st.text_input("Enter a proverb")
+    author = st.text_input("Your name or nickname")
+    region = st.selectbox("Region", ["North", "South", "East", "West", "Central"])
+    language = st.selectbox("Language", ["Hindi", "Tamil", "Telugu", "Kannada", "Bengali", "Other"])
+    submitted = st.form_submit_button("Submit")
+    if submitted and proverb:
+        core.save_proverb(proverb, author, region, language)
+        st.success("Thank you! Your proverb was saved.")
 
-# ---- Proverb of the Day ----
-if page == "Proverb of the Day":
-    st.subheader("✨ Proverb of the Day")
+# === Audio Input ===
+st.markdown("### 🎙️ Say a Proverb (Audio)")
+uploaded_audio = st.file_uploader("Upload audio file (WAV/MP3)", type=["wav", "mp3"])
+if uploaded_audio:
+    transcription = audio.transcribe_audio(uploaded_audio)
+    st.info(f"Transcribed Text: {transcription}")
 
-    all_proverbs = vote.get_all()
-    if not all_proverbs:
-        st.warning("No proverbs available yet.")
+# === Translate Section ===
+st.subheader("🌐 Translate a Proverb")
+proverb_to_translate = st.text_input("Enter proverb to translate")
+target_lang = st.selectbox("Choose target language", ["Hindi", "Tamil", "Telugu", "Kannada", "Bengali"])
+if st.button("Translate"):
+    if proverb_to_translate:
+        translated = translate.translate_proverb(proverb_to_translate, target_lang)
+        st.success(f"Translation ({target_lang}): {translated}")
     else:
-        proverb = random.choice(all_proverbs)
-        proverb_text = proverb.get("proverb", "No proverb text found.")
-        likes = proverb.get("likes", 0)
+        st.warning("Please enter a proverb to translate.")
 
-        st.markdown(f"""
-            <div style='padding:20px; background-color: rgba(255, 255, 255, 0.8); border-radius: 10px; text-align: center;'>
-                <h3>{proverb_text}</h3>
-                <form action="" method="post">
-                    <button name="like" type="submit">❤️ {likes}</button>
-                </form>
-            </div>
-        """, unsafe_allow_html=True)
+# === Stats Section ===
+st.subheader("📊 Proverb Stats")
+stats = core.load_stats()
+if stats["languages"] or stats["regions"]:
+    col1, col2 = st.columns(2)
 
-        if st.button("❤️ Like this proverb"):
-            vote.like_proverb(proverb_text)
-            st.experimental_rerun()
+    with col1:
+        st.markdown("**Languages**")
+        plt.figure(figsize=(3,2))
+        plt.bar(stats["languages"].keys(), stats["languages"].values(), color="orange")
+        st.pyplot(plt)
 
-        st.info("New proverbs will refresh automatically when you revisit this page.")
-
-# ---- Submit Page ----
-elif page == "Submit":
-    st.subheader("📝 Submit a Local Proverb")
-
-    proverb = st.text_area("Type the proverb in your local language")
-    region = st.selectbox("Choose your region", [
-        "Andhra Pradesh", "Bihar", "Gujarat", "Karnataka", "Kerala",
-        "Madhya Pradesh", "Maharashtra", "Odisha", "Punjab", "Rajasthan",
-        "Tamil Nadu", "Telangana", "Uttar Pradesh", "West Bengal", "Other"
-    ])
-    audio_file = st.file_uploader("Or upload audio (MP3/WAV)", type=["mp3", "wav"])
-
-    if st.button("Submit"):
-        if proverb:
-            core.save_proverb(proverb, region)
-            st.success("✅ Proverb submitted successfully!")
-        elif audio_file:
-            transcribed = audio.transcribe_audio(audio_file)
-            core.save_proverb(transcribed, region)
-            st.success("✅ Proverb from audio submitted successfully!")
-        else:
-            st.warning("Please enter a proverb or upload audio.")
-
-# ---- Translate Page ----
-elif page == "Translate":
-    st.subheader("🌐 Translate a Proverb")
-
-    proverb_text = st.text_input("Enter a proverb to translate")
-
-    lang_map = {
-        "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn",
-        "Bengali": "bn", "Marathi": "mr", "Malayalam": "ml", "Gujarati": "gu",
-        "Punjabi": "pa", "Urdu": "ur", "Assamese": "as", "Odia": "or",
-        "Sanskrit": "sa", "English": "en", "Arabic": "ar", "French": "fr",
-        "Spanish": "es", "German": "de", "Chinese": "zh-CN", "Japanese": "ja",
-        "Russian": "ru", "Korean": "ko", "Portuguese": "pt", "Italian": "it"
-    }
-
-    target_lang = st.selectbox("Translate to", list(lang_map.keys()))
-    if st.button("Translate"):
-        if proverb_text.strip():
-            translated = translate.translate(proverb_text, lang_map[target_lang])
-            st.success(f"Translated: {translated}")
-        else:
-            st.warning("Please enter a proverb first.")
-
-# ---- Stats Page ----
-elif page == "Stats":
-    st.subheader("📊 Region-wise Proverbs Stats")
-    stats = core.load_stats()
-    if stats:
-        st.bar_chart(stats)
-    else:
-        st.info("No statistics to display yet.")
+    with col2:
+        st.markdown("**Regions**")
+        plt.figure(figsize=(3,2))
+        plt.bar(stats["regions"].keys(), stats["regions"].values(), color="teal")
+        st.pyplot(plt)
+else:
+    st.info("No stats yet. Submit a few proverbs to see insights.")
