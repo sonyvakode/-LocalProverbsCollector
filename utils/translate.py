@@ -1,13 +1,9 @@
-import streamlit as st
+from googletrans import Translator
 
-def translate_proverb():
-    text = st.text_input("Enter proverb to translate")
-    target_language = st.selectbox("Translate to", ["Hindi", "English", "Tamil", "Telugu", "Kannada", "Gujarati"])
-
-    if st.button("Translate"):
-        if text:
-            # Dummy translation (mock logic)
-            translated = f"{text} (translated to {target_language})"
-            st.success(f"🔤 {translated}")
-        else:
-            st.warning("Please enter a proverb to translate.")
+def translate_text(text, from_lang, to_lang):
+    try:
+        translator = Translator()
+        result = translator.translate(text, src=from_lang, dest=to_lang)
+        return result.text
+    except Exception as e:
+        return f"Translation error: {str(e)}"
