@@ -1,9 +1,13 @@
-def translate_proverb(proverb, target_language):
-    translations = {
-        "Hindi": "यह एक उदाहरण है",
-        "Tamil": "இது ஒரு எடுத்துக்காட்டு ஆகும்",
-        "Telugu": "ఇది ఒక ఉదాహరణ",
-        "Kannada": "ಇದು ಒಂದು ಉದಾಹರಣೆ",
-        "Bengali": "এটি একটি উদাহরণ",
-    }
-    return translations.get(target_language, proverb)
+import streamlit as st
+
+def translate_proverb():
+    text = st.text_input("Enter proverb to translate")
+    target_language = st.selectbox("Translate to", ["Hindi", "English", "Tamil", "Telugu", "Kannada", "Gujarati"])
+
+    if st.button("Translate"):
+        if text:
+            # Dummy translation (mock logic)
+            translated = f"{text} (translated to {target_language})"
+            st.success(f"🔤 {translated}")
+        else:
+            st.warning("Please enter a proverb to translate.")
