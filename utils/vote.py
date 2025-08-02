@@ -1,23 +1,22 @@
-from .core import load_proverbs
-import json
+from .core import load_stats, save_stats
 
-DATA_FILE = "data/proverbs.txt"
+def get_all():
+    return load_stats()
 
-def _update_proverb(target_text, key):
-    proverbs = load_proverbs()
-    updated = False
-    for p in proverbs:
-        if p["text"] == target_text:
-            p[key] = p.get(key, 0) + 1
-            updated = True
-            break
-    if updated:
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            for p in proverbs:
-                f.write(json.dumps(p) + "\n")
+def like_proverb(proverb):
+    stats = load_stats()
+    stats.setdefault(proverb, {"likes": 0, "views": 0, "saves": 0})
+    stats[proverb]["likes"] += 1
+    save_stats(stats)
 
-def like_proverb(text):
-    _update_proverb(text, "likes")
+def view_proverb(proverb):
+    stats = load_stats()
+    stats.setdefault(proverb, {"likes": 0, "views": 0, "saves": 0})
+    stats[proverb]["views"] += 1
+    save_stats(stats)
 
-def save_proverb(text):
-    _update_proverb(text, "saves")
+def save_proverb_stat(proverb):
+    stats = load_stats()
+    stats.setdefault(proverb, {"likes": 0, "views": 0, "saves": 0})
+    stats[proverb]["saves"] += 1
+    save_stats(stats)
