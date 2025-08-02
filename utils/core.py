@@ -1,18 +1,34 @@
+import json
 import os
 
-DATA_FILE = "data/proverbs.txt"
+DATA_FILE = "utils/data.json"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 def save_proverb(text, language, region):
-    with open(DATA_FILE, "a", encoding="utf-8") as f:
-        f.write(f"{text}|{language}|{region}|0|0\n")
+    data = load_data()
+    new_entry = {
+        "text": text,
+        "language": language,
+        "region": region,
+        "views": 0,
+        "likes": 0
+    }
+    data.append(new_entry)
+    save_data(data)
 
-def load_proverbs():
-    if not os.path.exists(DATA_FILE):
-        return []
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-    proverbs = [line.strip().split("|") for line in lines if line.strip()]
-    for p in proverbs:
-        if len(p) < 5:
-            p.extend(["0"] * (5 - len(p)))  # Ensure all fields exist
-    return [(p[0], p[1], p[2], int(p[3]), int(p[4])) for p in proverbs]
+def load_stats():
+    data = load_data()
+    stats = {}
+    for entry in data:
+        lang = entry["language"]
+        stats[lang] = stats.get(lang, 0) + 1
+    return stats
