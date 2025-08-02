@@ -1,6 +1,6 @@
-streamlit==1.35.0
-pandas==2.2.2
-matplotlib==3.8.4
-deep-translator==1.11.4
-SpeechRecognition==3.10.1
-pydub==0.25.1
+streamlit
+pandas
+deep-translator
+SpeechRecognition
+pydub
+matplotlib
