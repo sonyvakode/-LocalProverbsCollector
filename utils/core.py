@@ -1,34 +1,21 @@
-import json
 import os
+import json
+from collections import Counter
 
-DATA_FILE = "utils/data.json"
+DATA_FILE = "data/proverbs.txt"
 
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
+def save_proverb(text, region):
+    entry = {"text": text, "region": region, "likes": 0, "views": 0, "saves": 0}
+    with open(DATA_FILE, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
-def save_proverb(text, language, region):
-    data = load_data()
-    new_entry = {
-        "text": text,
-        "language": language,
-        "region": region,
-        "views": 0,
-        "likes": 0
-    }
-    data.append(new_entry)
-    save_data(data)
+def load_proverbs():
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return [json.loads(line.strip()) for line in f if line.strip()]
 
 def load_stats():
-    data = load_data()
-    stats = {}
-    for entry in data:
-        lang = entry["language"]
-        stats[lang] = stats.get(lang, 0) + 1
-    return stats
+    proverbs = load_proverbs()
+    regions = [p.get("region", "Unknown") for p in proverbs]
+    return dict(Counter(regions))
