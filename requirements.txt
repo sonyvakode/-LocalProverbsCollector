@@ -1,5 +1,6 @@
 streamlit
-pip install deep-translator
-pyttsx3
-gtts
-googletrans==4.0.0-rc1
+deep-translator
+speechrecognition
+pillow
+pip install -r requirements.txt
+streamlit run main.py
