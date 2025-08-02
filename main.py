@@ -1,115 +1,99 @@
 import streamlit as st
 import random
 import time
+import base64
 from utils import core, translate, vote, audio
-from utils.language import LANGUAGES
-from datetime import datetime
 
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# ---------- Background Styling ----------
-page_bg_img = """
-<style>
-body {
-    background-color: #f7f7f7;
-    font-family: 'Segoe UI', sans-serif;
-}
-h1, h2, h3 {
-    color: #333333;
-}
-.card {
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 1.2rem;
-    border-radius: 16px;
-    box-shadow: 0px 2px 12px rgba(0,0,0,0.08);
-}
-button, .stButton>button {
-    border-radius: 10px;
-}
-</style>
-"""
-st.markdown(page_bg_img, unsafe_allow_html=True)
+# Background setup
+def set_bg(image_path):
+    with open(image_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-# ---------- Title ----------
-st.markdown("<h1 style='text-align:center;'>🌸 Indian Wisdom 🌸</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align:center; color:gray;'>A Collector of Local Proverbs Across Languages</h4>", unsafe_allow_html=True)
-st.markdown("---")
+set_bg("background.jpg")
 
-# ---------- Proverb of the Day ----------
-proverbs = core.load_proverbs()
-stats = core.load_stats()
+st.markdown("""
+    <h1 style='text-align: center; font-family: Arial;'>📜 Indian Wisdom</h1>
+    <p style='text-align: center;'>Discover, submit, and celebrate the timeless wisdom of Indian proverbs.</p>
+""", unsafe_allow_html=True)
 
-if proverbs:
-    st.subheader("🌟 Proverb of the Day")
-    idx = random.randint(0, len(proverbs)-1)
-    proverb = proverbs[idx]
-    views = stats.get(proverb, {}).get("views", 0)
-    likes = stats.get(proverb, {}).get("likes", 0)
+# Load data
+all_proverbs = core.load_proverbs()
 
-    with st.container():
-        st.markdown(f"<div class='card'><h3 style='text-align:center;'>{proverb}</h3>", unsafe_allow_html=True)
-        cols = st.columns(4)
-        with cols[0]:
-            if st.button("❤️ Like", key=f"like_{idx}"):
-                vote.like_proverb(proverb)
-                st.experimental_rerun()
-        with cols[1]:
-            st.write(f"👍 {likes}")
-        with cols[2]:
-            st.write(f"👁️ {views + 1}")
-        with cols[3]:
-            if st.button("🌐 Translate", key=f"translate_{idx}"):
-                lang = st.selectbox("Translate to:", list(LANGUAGES.keys()), key=f"lang_{idx}")
-                translated = translate.translate_proverb(proverb, LANGUAGES[lang])
-                st.success(translated)
-        st.markdown("</div>", unsafe_allow_html=True)
+# --- Proverb of the Day ---
+st.markdown("### 🌟 Proverb of the Day")
+proverb_slot = st.empty()
 
-    vote.increment_view(proverb)
-    st.markdown("---")
+def rotate_proverb():
+    for _ in range(1):
+        proverb = random.choice(all_proverbs)
+        proverb_text = proverb["text"]
+        lang = proverb.get("language", "Unknown")
+        likes = proverb.get("likes", 0)
+        views = proverb.get("views", 0)
 
-# ---------- Submit a Proverb ----------
-st.subheader("✍️ Share Your Proverb")
-with st.form("submit_proverb_form"):
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Your Name / Nickname")
-        region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central"])
-    with col2:
-        lang = st.selectbox("Language", list(LANGUAGES.keys()))
-        audio_file = st.file_uploader("Or Upload an Audio", type=["wav", "mp3", "m4a"])
+        vote.increment_view(proverb_text)
+        proverb_slot.markdown(f"""
+        <div style="padding:10px; background-color: #ffffffdd; border-radius: 12px;">
+            <h4 style="margin-bottom:5px;">🗣️ {proverb_text}</h4>
+            <small>📌 Language: {lang}</small><br/>
+            ❤️ {likes} &nbsp;&nbsp; 👁️ {views}
+            <form action="" method="post">
+                <input type="hidden" name="proverb" value="{proverb_text}">
+                <button type="submit">Like ❤️</button>
+            </form>
+        </div>
+        """, unsafe_allow_html=True)
 
-    text = st.text_area("Enter Proverb (or leave blank if using audio)")
+rotate_proverb()
+
+# --- Submit New Proverb ---
+st.markdown("### ✍️ Submit Your Own Proverb")
+with st.form("submit_form"):
+    new_proverb = st.text_area("Write a local proverb")
+    region = st.selectbox("Region", ["Select", "North", "South", "East", "West", "Central", "Northeast"])
+    language = st.text_input("Language (e.g., Hindi, Tamil, Bengali, etc.)")
+
+    audio_file = st.file_uploader("Optional: Upload an audio file", type=["mp3", "wav"])
+    if audio_file:
+        transcript = audio.transcribe_audio(audio_file)
+        st.success(f"Transcription: {transcript}")
+
     submitted = st.form_submit_button("Submit")
+    if submitted and new_proverb and region != "Select" and language:
+        core.save_proverb(new_proverb, region, language)
+        st.success("Proverb submitted successfully!")
+    elif submitted:
+        st.error("Please fill all required fields.")
 
-    if submitted:
-        if audio_file:
-            proverb = audio.transcribe_audio(audio_file)
-        else:
-            proverb = text.strip()
+# --- Translate Section ---
+st.markdown("### 🌐 Translate a Proverb")
+to_translate = st.text_input("Enter proverb to translate")
+target_lang = st.selectbox("Translate to", ["hi", "ta", "bn", "gu", "ml", "te", "kn", "ur"])
+if st.button("Translate"):
+    if to_translate:
+        translated = translate.translate_text(to_translate, target_lang)
+        st.success(f"Translated: {translated}")
+    else:
+        st.error("Please enter a proverb to translate.")
 
-        if proverb:
-            core.save_proverb(proverb)
-            st.success("✅ Proverb submitted successfully!")
-        else:
-            st.warning("⚠️ Please enter text or upload audio.")
-
-st.markdown("---")
-
-# ---------- Stats ----------
-st.subheader("📊 Proverbs Leaderboard")
-all_stats = vote.get_all()
-if all_stats:
-    sorted_stats = sorted(all_stats.items(), key=lambda x: x[1]["likes"], reverse=True)[:5]
-    for idx, (prov, s) in enumerate(sorted_stats, 1):
-        st.markdown(
-            f"<div class='card'><strong>{idx}. {prov}</strong><br>❤️ Likes: {s['likes']} | 👁️ Views: {s['views']}</div>",
-            unsafe_allow_html=True,
-        )
-
-# ---------- Footer ----------
-st.markdown("---")
-st.markdown(
-    "<p style='text-align:center; color:gray;'>Made with ❤️ for Indian wisdom | © 2025</p>",
-    unsafe_allow_html=True
-)
+# --- Stats Section ---
+st.markdown("### 📊 Proverbs Overview")
+stats = core.load_stats()
+if stats:
+    st.json(stats)
+else:
+    st.info("No stats available yet.")
