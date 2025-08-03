@@ -1,36 +1,34 @@
-import json
-import os
+# utils/core.py
 
-PROVERB_FILE = "data/proverbs.txt"
+import os
+import json
+
+PROVERBS_FILE = "data/proverbs.txt"
 STATS_FILE = "data/stats.json"
 
-def save_proverb(proverbs, append=False):
-    all_proverbs = get_all()
-    if append:
-        all_proverbs.extend(proverbs)
+def save_proverb(proverb, language, region):
+    with open(PROVERBS_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{proverb} | {language} | {region}\n")
+
+    if not os.path.exists(STATS_FILE):
+        stats = {"total_proverbs": 0}
     else:
-        all_proverbs = proverbs
-    with open(PROVERB_FILE, "w", encoding="utf-8") as f:
-        for proverb in all_proverbs:
-            f.write(json.dumps(proverb) + "\n")
-    save_stats(all_proverbs)
+        with open(STATS_FILE, "r", encoding="utf-8") as f:
+            stats = json.load(f)
 
-def get_all():
-    if not os.path.exists(PROVERB_FILE):
-        return []
-    with open(PROVERB_FILE, "r", encoding="utf-8") as f:
-        return [json.loads(line.strip()) for line in f if line.strip()]
+    stats["total_proverbs"] = stats.get("total_proverbs", 0) + 1
 
-def save_stats(proverbs):
-    language_counts = {}
-    for p in proverbs:
-        lang = p.get("language", "Unknown")
-        language_counts[lang] = language_counts.get(lang, 0) + 1
     with open(STATS_FILE, "w", encoding="utf-8") as f:
-        json.dump(language_counts, f)
+        json.dump(stats, f)
 
 def load_stats():
     if not os.path.exists(STATS_FILE):
-        return {}
+        return {"total_proverbs": 0}
     with open(STATS_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def load_proverbs():
+    if not os.path.exists(PROVERBS_FILE):
+        return []
+    with open(PROVERBS_FILE, "r", encoding="utf-8") as f:
+        return [line.strip() for line in f.readlines()]
