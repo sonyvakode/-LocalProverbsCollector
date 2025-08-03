@@ -18,13 +18,13 @@ st.markdown(
 )
 
 # ========== Navigation ========== #
-page = st.sidebar.selectbox("📚 Navigate", ["Home", "Proverb of the Day", "Stats"])
+page = st.sidebar.selectbox("📚 Navigate", ["Home", "Today’s Featured Proverb", "Stats"])
 
 # ========== Home Page ========== #
 if page == "Home":
     st.markdown("""
     <div style='padding: 10px; background-color: #fff7e6; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500;'>
-    ✨ Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
+    Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
     </div>
     """, unsafe_allow_html=True)
 
@@ -63,37 +63,52 @@ if page == "Home":
             st.warning("Please enter a proverb to translate.")
 
 # ========== Proverb of the Day Page ========== #
-elif page == "Proverb of the Day":
-    st.subheader("🌟 Proverb of the Day")
+elif page == "Today’s Featured Proverb":
+    st.subheader("📝 Today’s Featured Proverb")
     proverbs = core.load_proverbs()
     if proverbs:
         selected_proverb = random.choice(proverbs)
-        display_lang = random.choice(language.get_all_languages())
+        display_lang = "English"
         translated = translate.translate_text(selected_proverb, display_lang)
 
         st.markdown(f"""
             <div style='
-                background-color: rgba(255,255,255,0.85);
+                background-color: rgba(255,255,255,0.9);
                 padding: 20px;
                 border-radius: 12px;
                 margin-top: 20px;
-                font-size: 22px;
-                text-align: center;
+                font-size: 20px;
                 color: #333;
             '>
-                <strong>{translated}</strong>
-                <div style='margin-top: 10px; font-size: 14px; color: #555;'>Language: {display_lang}</div>
+                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div style='margin-top: 10px;'><strong>Translated:</strong> {translated}</div>
             </div>
         """, unsafe_allow_html=True)
     else:
         st.warning("No proverbs submitted yet.")
 
-    if st.button("🔁 Next Proverb"):
+    if st.button("🔄 Next Proverb"):
         st.rerun()
 
 # ========== Stats Page ========== #
 elif page == "Stats":
     st.subheader("📊 Submission Stats")
+
     stats = core.load_stats()
     total = stats.get("total_submitted", 0)
     st.info(f"📈 Total Proverbs Submitted: **{total}**")
+
+    region_filter = st.selectbox("Filter by Region (Optional)", [
+        "All", "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
+        "Hyderabad", "Lucknow", "Jaipur", "Ahmedabad", "Patna"
+    ])
+
+    region_counts = stats.get("regions", {})
+    if region_filter != "All":
+        count = region_counts.get(region_filter, 0)
+        st.success(f"📍 Proverbs from **{region_filter}**: **{count}**")
+    else:
+        st.markdown("### 🏆 Leaderboard by Region")
+        sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
+        for region, count in sorted_regions:
+            st.markdown(f"- **{region}**: {count} proverbs")
