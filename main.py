@@ -1,26 +1,38 @@
 import streamlit as st
 import random
 from utils import core, translate, vote, audio, language
+import base64
 
-# ========== Transparent Light Background Styling ========== #
-st.markdown("""
-    <style>
-    .stApp {
-        background-color: rgba(255, 240, 245, 0.2);  /* Light pink with transparency */
-    }
-    </style>
-""", unsafe_allow_html=True)
+# ========== Set Light Background Image from Background.jpg ==========
+def set_background(image_file):
+    with open(image_file, "rb") as f:
+        data = f.read()
+        encoded = base64.b64encode(data).decode()
+        st.markdown(f"""
+            <style>
+                .stApp {{
+                    background-image: url("data:image/jpg;base64,{encoded}");
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-attachment: fixed;
+                }}
+            </style>
+        """, unsafe_allow_html=True)
+
+set_background("Background.jpg")  # Make sure this matches the capital 'B'
 
 # ========== App Title ========== #
-st.markdown(
-    "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div style='text-align: center; margin-top: -30px;'>
+    <img src='https://cdn-icons-png.flaticon.com/512/29/29302.png' width='60' style='margin-bottom: -10px;' />
+</div>
+<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>
+""", unsafe_allow_html=True)
 
-# ========== Navigation ========== #
-page = st.sidebar.selectbox("📚 Navigate", ["Home", "Today’s Featured Proverb", "Stats"])
+# ========== Navigation ==========
+page = st.sidebar.selectbox("📚 Navigate", ["Home", "Proverb of the day", "Stats"])
 
-# ========== Home Page ========== #
+# ========== Home Page ==========
 if page == "Home":
     st.markdown("""
     <div style='padding: 10px; background-color: #fff7e6; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500;'>
@@ -62,9 +74,9 @@ if page == "Home":
         else:
             st.warning("Please enter a proverb to translate.")
 
-# ========== Proverb of the Day Page ========== #
-elif page == "Today’s Featured Proverb":
-    st.subheader("📝 Proverb oF The Day")
+# ========== Proverb of the Day Page ==========
+elif page == "Proverb of the day":
+    st.subheader("📝 Proverb of the day")
     proverbs = core.load_proverbs()
     if proverbs:
         selected_proverb = random.choice(proverbs)
@@ -90,7 +102,7 @@ elif page == "Today’s Featured Proverb":
     if st.button("🔄 Next Proverb"):
         st.rerun()
 
-# ========== Stats Page ========== #
+# ========== Stats Page ==========
 elif page == "Stats":
     st.subheader("📊 Submission Stats")
 
