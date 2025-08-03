@@ -1,40 +1,41 @@
 import os
 import json
+from datetime import datetime
 
-PROVERB_FILE = "data/proverbs.txt"
+DATA_FILE = "data/proverbs.txt"
 STATS_FILE = "data/stats.json"
 
-def save_proverb(text, language, region):
-    if not os.path.exists("data"):
-        os.makedirs("data")
 
-    # Save proverb
-    with open(PROVERB_FILE, "a", encoding="utf-8") as f:
-        f.write(f"{text}||{language}||{region}\n")
+def save_proverb(proverb):
+    # Save the proverb to file
+    with open(DATA_FILE, "a", encoding="utf-8") as f:
+        f.write(proverb + "\n")
 
     # Update stats
     stats = load_stats()
-    stats[language] = stats.get(language, 0) + 1
-    with open(STATS_FILE, "w", encoding="utf-8") as f:
-        json.dump(stats, f)
+    stats["total_submitted"] = stats.get("total_submitted", 0) + 1
 
-def load_proverbs():
-    if not os.path.exists(PROVERB_FILE):
-        return []
-    proverbs = []
-    with open(PROVERB_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            parts = line.strip().split("||")
-            if len(parts) == 3:
-                proverbs.append({
-                    "text": parts[0],
-                    "language": parts[1],
-                    "region": parts[2]
-                })
-    return proverbs
+    # Optional: you could enhance this with more detailed region tracking
+    region = stats.get("last_region", "Unknown")
+    if "regions" not in stats:
+        stats["regions"] = {}
+    stats["regions"][region] = stats["regions"].get(region, 0) + 1
+
+    with open(STATS_FILE, "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+
 
 def load_stats():
-    if not os.path.exists(STATS_FILE):
-        return {}
-    with open(STATS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if os.path.exists(STATS_FILE):
+        with open(STATS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    else:
+        return {"total_submitted": 0, "regions": {}}
+
+
+def load_proverbs():
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        return []
