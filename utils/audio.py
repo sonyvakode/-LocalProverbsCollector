@@ -1,12 +1,17 @@
 import speech_recognition as sr
+import io
 
-def transcribe_audio(audio_file):
+def transcribe_audio(uploaded_file):
     recognizer = sr.Recognizer()
-    with sr.AudioFile(audio_file) as source:
-        audio_data = recognizer.record(source)
+
+    # Read file as bytes and wrap in BytesIO
+    audio_bytes = uploaded_file.read()
+    audio_file = io.BytesIO(audio_bytes)
+
     try:
-        return recognizer.recognize_google(audio_data, language="en-IN")
-    except sr.UnknownValueError:
-        return "Could not understand the audio."
-    except sr.RequestError:
-        return "Speech Recognition service is not available."
+        with sr.AudioFile(audio_file) as source:
+            audio = recognizer.record(source)
+            text = recognizer.recognize_google(audio)
+            return text
+    except Exception as e:
+        return f"Transcription failed: {e}"
