@@ -1,107 +1,111 @@
+# main.py
+
 import streamlit as st
 import random
-from utils import core, vote, translate, audio
-from streamlit_extras.stylable_container import stylable_container
+from utils import core, translate, vote, audio, language
 
-# Load proverbs and stats
-proverbs = core.load_proverbs()
-stats = core.load_stats()
+st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# Page setup
-st.set_page_config(page_title="Indian Wisdom", page_icon="📜", layout="centered")
+# ---------- Custom CSS ----------
+def set_background():
+    st.markdown("""
+        <style>
+            body {
+                background-color: #f7f7f7;
+            }
+            .main {
+                padding: 2rem;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            .title {
+                text-align: center;
+                font-size: 2rem;
+                font-weight: bold;
+                color: #333333;
+                margin-bottom: 1.5rem;
+            }
+            .section-header {
+                font-size: 1.3rem;
+                color: #222222;
+                margin-top: 2rem;
+            }
+            .proverb-box {
+                background-color: #ffffff;
+                padding: 1rem;
+                border-radius: 12px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
-# Custom Styling
-st.markdown("""
-    <style>
-        body {
-            background-color: #fff9f2;
-        }
-        .proverb-box {
-            padding: 2rem;
-            border-radius: 1.5rem;
-            background-color: #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            margin-top: 2rem;
-        }
-        .proverb-text {
-            font-size: 1.5rem;
-            font-style: italic;
-            margin-bottom: 1rem;
-        }
-        .proverb-meta {
-            font-size: 0.9rem;
-            color: #555;
-        }
-    </style>
-""", unsafe_allow_html=True)
+set_background()
 
-# App Title
-st.markdown("### 📜 *Indian Wisdom*")
-st.markdown("Discover, submit, and celebrate the timeless wisdom of Indian proverbs.")
+# ---------- Title ----------
+st.markdown("<div class='title'>🪔 Indian Wisdom: Local Proverbs Collector</div>", unsafe_allow_html=True)
 
-# --- Proverb of the Day Section ---
-st.markdown("## 🌟 Proverb of the Day")
+# ---------- Proverb of the Day ----------
+st.markdown("<div class='section-header'>📜 Proverb of the Day</div>", unsafe_allow_html=True)
 
-if proverbs:
-    # Session state to rotate proverbs
-    if 'current_index' not in st.session_state:
-        st.session_state.current_index = random.randint(0, len(proverbs) - 1)
+all_proverbs = core.load_proverbs()
+langs = list(language.get_supported_languages().values())
+selected_lang = random.choice(langs)
 
-    current_proverb = proverbs[st.session_state.current_index]
-
-    # Proverb Display
-    with st.container():
-        st.markdown(f"""
-        <div class="proverb-box">
-            <div class="proverb-text">"{current_proverb['text']}"</div>
-            <div class="proverb-meta">🌐 Language: {current_proverb['language']} &nbsp;&nbsp;📍 Region: {current_proverb['region']}</div>
+if all_proverbs:
+    current = random.choice(all_proverbs).split("|")[0].strip()
+    translated = translate.translate_text(current, target_lang=selected_lang)
+    st.markdown(f"""
+        <div class='proverb-box'>
+            <div style='font-size: 1.1rem;'>💬 <b>{translated}</b></div>
+            <div style='font-size: 0.85rem; color: #777;'>Language: {selected_lang}</div>
         </div>
-        """, unsafe_allow_html=True)
-
-    # Button to load another proverb
-    if st.button("🔁 Next Proverb"):
-        st.session_state.current_index = random.randint(0, len(proverbs) - 1)
+    """, unsafe_allow_html=True)
 else:
-    st.warning("No proverbs yet.")
+    st.info("No proverbs found yet. Add one below!")
 
-# --- Submit Proverb Section ---
-st.markdown("## ✍️ Submit a Proverb")
+# ---------- Submit Proverb ----------
+st.markdown("<div class='section-header'>✍️ Submit a Proverb</div>", unsafe_allow_html=True)
 
-with st.form("submit_form"):
-    text = st.text_input("Enter the proverb")
-    language = st.selectbox("Language", ["Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Marathi", "Gujarati", "Punjabi", "Bengali", "Urdu", "Odia", "Other"])
-    region = st.text_input("Region")
-    audio_file = st.file_uploader("Upload an audio proverb (optional)", type=["mp3", "wav", "m4a"])
+col1, col2 = st.columns([3, 2])
 
-    submitted = st.form_submit_button("Submit")
+with col1:
+    proverb_input = st.text_area("Enter a proverb", height=80)
+    lang = st.selectbox("Select Language", list(language.get_supported_languages().keys()))
+    region = st.text_input("Enter your Region (State/City)")
 
-    if submitted:
-        if not text and audio_file:
-            text = audio.transcribe_audio(audio_file)
-        if text:
-            core.save_proverb(text, language, region)
-            st.success("Proverb submitted successfully!")
-        else:
-            st.error("Please provide text or audio.")
+with col2:
+    st.markdown("#### 🎤 Or Upload Audio")
+    audio_file = st.file_uploader("Upload audio file", type=["wav", "mp3"])
+    if audio_file:
+        with st.spinner("Transcribing..."):
+            transcription = audio.transcribe_audio(audio_file)
+            st.success("Transcribed Text:")
+            st.write(transcription)
+            proverb_input = transcription
 
-# --- Translation Section ---
-st.markdown("## 🌐 Translate a Proverb")
-with st.form("translate_form"):
-    text_to_translate = st.text_input("Enter proverb to translate")
-    target_lang = st.selectbox("Translate to", ["en", "hi", "ta", "te", "kn", "ml", "mr", "gu", "pa", "bn", "ur", "or"])
-    do_translate = st.form_submit_button("Translate")
+if st.button("Submit Proverb"):
+    if proverb_input and lang and region:
+        core.save_proverb(proverb_input.strip(), lang.strip(), region.strip())
+        st.success("✅ Proverb submitted successfully!")
+    else:
+        st.warning("Please fill in all fields.")
 
-    if do_translate:
-        translated = translate.translate_proverb(text_to_translate, target_lang)
-        st.success(f"Translated: {translated}")
+# ---------- Translate Proverb ----------
+st.markdown("<div class='section-header'>🌐 Translate a Proverb</div>", unsafe_allow_html=True)
 
-# --- Stats Section ---
-st.markdown("## 📊 App Stats")
+to_translate = st.text_input("Enter a proverb to translate")
+target_language = st.selectbox("Translate to", list(language.get_supported_languages().keys()))
 
-if stats:
-    st.metric("Total Proverbs", stats.get("total_proverbs", 0))
-    st.metric("Most Common Language", stats.get("most_common_language", "N/A"))
-    st.metric("Most Common Region", stats.get("most_common_region", "N/A"))
-else:
-    st.info("No stats available yet.")
+if st.button("Translate"):
+    if to_translate:
+        result = translate.translate_text(to_translate, language.get_supported_languages()[target_language])
+        st.info(f"Translated: {result}")
+    else:
+        st.warning("Enter a proverb to translate.")
+
+# ---------- Stats ----------
+st.markdown("<div class='section-header'>📊 App Stats</div>", unsafe_allow_html=True)
+
+stats = core.load_stats()
+st.metric(label="Total Proverbs Submitted", value=stats.get("total_proverbs", 0))
