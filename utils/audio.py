@@ -1,17 +1,12 @@
-# utils/audio.py
-
 import speech_recognition as sr
 
-def transcribe_audio(file):
+def transcribe_audio(audio_file):
     recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_file) as source:
+        audio_data = recognizer.record(source)
     try:
-        with sr.AudioFile(file) as source:
-            audio_data = recognizer.record(source)
-            text = recognizer.recognize_google(audio_data, language="en-IN")
-            return text
+        return recognizer.recognize_google(audio_data, language="en-IN")
     except sr.UnknownValueError:
         return "Could not understand the audio."
     except sr.RequestError:
-        return "Error connecting to the speech recognition service."
-    except Exception as e:
-        return f"Error processing audio: {str(e)}"
+        return "Speech Recognition service is not available."
