@@ -1,119 +1,95 @@
-# main.py
-
 import streamlit as st
-import random
 from utils import core, translate, vote, audio, language
+import random
+import os
+import base64
 
-st.set_page_config(page_title="Indian Wisdom", layout="centered")
+# Set background from background.jpg
+def set_background(image_file):
+    with open(image_file, "rb") as img:
+        encoded = base64.b64encode(img.read()).decode()
+    bg_img = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{encoded}");
+        background-size: cover;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-position: center;
+    }}
+    </style>
+    """
+    st.markdown(bg_img, unsafe_allow_html=True)
 
-# ---------- Custom CSS ----------
-def set_background():
-    st.markdown("""
-        <style>
-            body {
-                background-color: #f6f6f6;
-            }
-            .main {
-                padding: 2rem;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            .title {
-                text-align: center;
-                font-size: 2rem;
-                font-weight: bold;
-                color: #333333;
-                margin-bottom: 1.5rem;
-            }
-            .section-header {
-                font-size: 1.3rem;
-                color: #222222;
-                margin-top: 1rem;
-                margin-bottom: 0.5rem;
-            }
-            .proverb-box {
-                background-color: #ffffff;
-                padding: 1rem;
-                border-radius: 12px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                text-align: center;
-                margin-bottom: 1rem;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+# Load background
+if os.path.exists("background.jpg"):
+    set_background("background.jpg")
 
-set_background()
+# Sidebar-style navigation with st.selectbox
+st.title("📜 Indian Wisdom: Local Proverbs Collector")
 
-# ---------- Sidebar Navigation ----------
-st.sidebar.title("📱 Navigate")
-page = st.sidebar.radio("Go to", ["🏠 Proverb of the Day", "✍️ Submit", "🌐 Translate", "📊 Stats"])
+pages = ["Submit Proverb", "Proverb of the Day", "Translate Proverb", "Stats"]
+page = st.selectbox("Choose a section", pages)
 
-# ---------- App Title ----------
-st.markdown("<div class='title'>🪔 Indian Wisdom: Local Proverbs Collector</div>", unsafe_allow_html=True)
+# Page 1: Submit Proverb
+if page == "Submit Proverb":
+    st.header("✍️ Share Your Local Proverb")
 
-# ---------- PAGE 1: Proverb of the Day ----------
-if page == "🏠 Proverb of the Day":
-    st.markdown("<div class='section-header'>📜 Proverb of the Day</div>", unsafe_allow_html=True)
+    lang = st.selectbox("Select Language", language.languages())
+    region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central"])
+    proverb = st.text_area("Write your proverb here")
 
-    all_proverbs = core.load_proverbs()
-    langs = list(language.get_supported_languages().values())
-    selected_lang = random.choice(langs)
+    audio_file = st.file_uploader("🎙️ Upload an audio file", type=["wav", "mp3", "ogg"])
+    if audio_file:
+        try:
+            transcribed = audio.transcribe_audio(audio_file)
+            st.success(f"Transcribed: {transcribed}")
+            proverb = transcribed
+        except Exception as e:
+            st.error(f"Transcription failed: {e}")
 
-    if all_proverbs:
-        current = random.choice(all_proverbs).split("|")[0].strip()
-        translated = translate.translate_text(current, target_lang=selected_lang)
-        st.markdown(f"""
-            <div class='proverb-box'>
-                <div style='font-size: 1.1rem;'>💬 <b>{translated}</b></div>
-                <div style='font-size: 0.85rem; color: #777;'>Language: {selected_lang}</div>
-            </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.info("No proverbs found yet. Add one from the Submit tab.")
-
-# ---------- PAGE 2: Submit Proverb ----------
-elif page == "✍️ Submit":
-    st.markdown("<div class='section-header'>✍️ Submit a Proverb</div>", unsafe_allow_html=True)
-
-    col1, col2 = st.columns([3, 2])
-
-    with col1:
-        proverb_input = st.text_area("Enter a proverb", height=80)
-        lang = st.selectbox("Select Language", list(language.get_supported_languages().keys()))
-        region = st.text_input("Enter your Region (State/City)")
-
-    with col2:
-        st.markdown("#### 🎤 Or Upload Audio")
-        audio_file = st.file_uploader("Upload audio file", type=["wav", "mp3"])
-        if audio_file:
-            with st.spinner("Transcribing..."):
-                transcription = audio.transcribe_audio(audio_file)
-                st.success("Transcribed Text:")
-                st.write(transcription)
-                proverb_input = transcription
-
-    if st.button("Submit Proverb"):
-        if proverb_input and lang and region:
-            core.save_proverb(proverb_input.strip(), lang.strip(), region.strip())
+    if st.button("Submit"):
+        if proverb.strip():
+            core.save_proverb(proverb, lang, region)
             st.success("✅ Proverb submitted successfully!")
         else:
-            st.warning("Please fill in all fields.")
+            st.warning("Please enter or upload a proverb first.")
 
-# ---------- PAGE 3: Translate ----------
-elif page == "🌐 Translate":
-    st.markdown("<div class='section-header'>🌐 Translate a Proverb</div>", unsafe_allow_html=True)
+# Page 2: Proverb of the Day
+elif page == "Proverb of the Day":
+    st.header("🌞 Proverb of the Day")
+    proverbs = core.load_proverbs()
+    if proverbs:
+        selected = random.choice(proverbs)
+        st.markdown(f"""
+            <div style="padding:20px; background-color:#ffffffcc; border-radius:12px; margin-top:10px;">
+                <h3 style="text-align:center;">“{selected['text']}”</h3>
+                <p style="text-align:center; font-style:italic;">Language: {selected['language']}</p>
+            </div>
+        """, unsafe_allow_html=True)
+        st.info("Refresh the page to see a new proverb.")
+    else:
+        st.warning("No proverbs available yet. Please add some!")
 
-    to_translate = st.text_input("Enter a proverb to translate")
-    target_language = st.selectbox("Translate to", list(language.get_supported_languages().keys()))
-
+# Page 3: Translate
+elif page == "Translate Proverb":
+    st.header("🌐 Translate a Proverb")
+    text = st.text_input("Enter a proverb to translate")
+    target_lang = st.selectbox("Translate to", language.languages())
     if st.button("Translate"):
-        if to_translate:
-            result = translate.translate_text(to_translate, language.get_supported_languages()[target_language])
-            st.info(f"Translated: {result}")
+        if text.strip():
+            translated = translate.translate_text(text, target_lang)
+            st.success(f"Translated: {translated}")
         else:
-            st.warning("Enter a proverb to translate.")
+            st.warning("Please enter a proverb to translate.")
 
-# ---------- PAGE 4: Stats ----------
-elif page == "📊 Stats":
-    st.markdown("<div class='section-header'>📊 App Stats</div>", unsafe_allow_html=True)
+# Page 4: Stats
+elif page == "Stats":
+    st.header("📊 Proverb Submission Stats")
     stats = core.load_stats()
-    st.metric(label="Total Proverbs Submitted", value=stats.get("total_proverbs", 0))
+    if stats:
+        total = sum(stats.values())
+        st.write(f"Total Proverbs Submitted: **{total}**")
+        st.bar_chart(stats)
+    else:
+        st.info("No data available yet.")
