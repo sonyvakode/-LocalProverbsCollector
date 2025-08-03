@@ -1,40 +1,43 @@
 import json
 import os
 
-DATA_PATH = "data/stats.json"
+STATS_FILE = "data/stats.json"
 
-def _load_data():
-    if not os.path.exists(DATA_PATH):
+def _load_stats():
+    if not os.path.exists(STATS_FILE):
         return []
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
+    with open(STATS_FILE, "r", encoding="utf-8") as f:
         try:
             return json.load(f)
         except json.JSONDecodeError:
             return []
 
-def _save_data(data):
-    with open(DATA_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def _save_stats(data):
+    with open(STATS_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def get_all():
+    """Return list of all proverbs with likes/views for leaderboard."""
+    return _load_stats()
 
 def like_proverb(proverb_text):
-    data = _load_data()
+    """Increment like count for a proverb."""
+    data = _load_stats()
     for item in data:
-        if item["proverb"] == proverb_text:
-            item["likes"] += 1
+        if item.get("proverb") == proverb_text:
+            item["likes"] = item.get("likes", 0) + 1
             break
     else:
-        data.append({"proverb": proverb_text, "likes": 1, "views": 1})
-    _save_data(data)
+        data.append({"proverb": proverb_text, "likes": 1, "views": 0})
+    _save_stats(data)
 
 def view_proverb(proverb_text):
-    data = _load_data()
+    """Increment view count for a proverb."""
+    data = _load_stats()
     for item in data:
-        if item["proverb"] == proverb_text:
-            item["views"] += 1
+        if item.get("proverb") == proverb_text:
+            item["views"] = item.get("views", 0) + 1
             break
     else:
         data.append({"proverb": proverb_text, "likes": 0, "views": 1})
-    _save_data(data)
-
-def get_all():
-    return _load_data()
+    _save_stats(data)
