@@ -1,35 +1,41 @@
 import streamlit as st
 import random
 import base64
-import os
 from utils import core, translate, vote, audio, language
 
 st.set_page_config(page_title="Indian Wisdom: Local Proverbs Collector", layout="centered")
 
 def set_background(image_path):
-    if os.path.exists(image_path):
+    try:
         with open(image_path, "rb") as image_file:
             encoded = base64.b64encode(image_file.read()).decode()
         css = f"""
         <style>
-        .stApp {{
-            background-image: url("data:image/jpeg;base64,{encoded}");
-            background-size: cover;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-position: center;
-            color: #111;
-        }}
-        .block-container {{
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 2rem;
-            border-radius: 1rem;
-        }}
+            .stApp {{
+                background-image: url("data:image/jpeg;base64,{encoded}");
+                background-size: cover;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                background-position: center;
+            }}
+            .block-container {{
+                max-width: 800px;
+                margin: auto;
+                padding-top: 2rem;
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 12px;
+            }}
+            h1, h2, h3 {{
+                text-align: center;
+            }}
+            .stTextInput>div>div>input, .stSelectbox>div>div {{
+                background-color: rgba(255,255,255,0.9);
+            }}
         </style>
         """
         st.markdown(css, unsafe_allow_html=True)
-    else:
-        st.warning("Background image not found.")
+    except FileNotFoundError:
+        st.warning("Background image not found. Please ensure 'Background.jpg' exists.")
 
 set_background("Background.jpg")
 
