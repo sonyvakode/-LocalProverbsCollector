@@ -14,53 +14,18 @@ def set_background(image_file):
             background-size: cover;
             background-attachment: fixed;
         }}
+        .css-1d391kg {{
+            background-color: white !important;
+        }}
+        section[data-testid="stSidebar"] > div {{
+            background-color: #ffffff !important;
+        }}
         </style>
     """, unsafe_allow_html=True)
 
 set_background("Background.jpg")
 
-# ========== Custom CSS ========== #
-st.markdown("""
-    <style>
-    /* Sidebar solid color */
-    [data-testid="stSidebar"] {
-        background-color: #f0f0f5;
-    }
-
-    /* Main boxes with solid color and shadow */
-    .custom-box {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 8px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
-    }
-
-    /* Center content inside boxes */
-    .center-text {
-        text-align: center;
-    }
-
-    /* Proverb of the day box styling */
-    .proverb-box {
-        background-color: #ffffff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 0 12px rgba(0,0,0,0.1);
-        text-align: center;
-        font-size: 20px;
-        color: #333;
-        margin-top: 20px;
-    }
-
-    .next-btn {
-        margin-top: 25px;
-        text-align: center;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# ========== App Title ========== #
+# ========== Title ========== #
 st.markdown(
     "<h1 style='text-align: center; color: black;'>🧠 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
@@ -71,9 +36,8 @@ page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
 
 # ========== Home Page ========== #
 if page == "Home":
-    st.markdown("<div class='custom-box'>", unsafe_allow_html=True)
     st.markdown("""
-    <div style='font-weight: 500; color: #333; font-size: 16px;'>
+    <div style='padding: 16px; background-color: #ffffff; border-radius: 8px; color: #333; text-align: center; font-weight: 500;'>
         Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
     </div>
     """, unsafe_allow_html=True)
@@ -88,7 +52,7 @@ if page == "Home":
         if transcript:
             st.success("Transcribed Text:")
             st.write(transcript)
-            proverb = transcript
+            proverb = transcript  # Override with audio text
 
     region = st.selectbox("📍 Select Your Region (State/City)", [
         "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
@@ -102,10 +66,7 @@ if page == "Home":
         else:
             st.warning("Please enter or upload a proverb before submitting.")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ========== Translate Section ========== #
-    st.markdown("<div class='custom-box'>", unsafe_allow_html=True)
+    st.markdown("---")
     st.subheader("🌐 Translate a Proverb")
     input_text = st.text_input("Enter a proverb to translate")
     target_lang = st.selectbox("Translate to", language.get_all_languages())
@@ -116,11 +77,11 @@ if page == "Home":
             st.success(f"Translated: {translated}")
         else:
             st.warning("Please enter a proverb to translate.")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # ========== Proverb of the Day Page ========== #
 elif page == "Proverb of the day":
-    st.subheader("📝 Proverb of the Day")
+    st.subheader("📝 Proverb of the day")
+
     try:
         with open("data/proverbs.txt", "r", encoding="utf-8") as f:
             all_proverbs = [line.strip() for line in f if line.strip()]
@@ -133,23 +94,32 @@ elif page == "Proverb of the day":
         translated = translate.translate_text(selected_proverb, display_lang)
 
         st.markdown(f"""
-            <div class='proverb-box'>
-                <div><strong>Original:</strong><br> {selected_proverb}</div>
-                <div style='margin-top: 15px;'><strong>Translated:</strong><br> {translated}</div>
+            <div style='
+                background-color: #ffffff;
+                padding: 24px;
+                border-radius: 10px;
+                margin: 30px auto 20px;
+                font-size: 18px;
+                color: #222;
+                width: 90%;
+                max-width: 700px;
+                text-align: center;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            '>
+                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div style='margin-top: 12px;'><strong>Translated:</strong> {translated}</div>
             </div>
         """, unsafe_allow_html=True)
-
-        st.markdown("<div class='next-btn'>", unsafe_allow_html=True)
-        if st.button("🔄 Next Proverb"):
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
     else:
         st.warning("No proverbs available in the file yet.")
 
+    st.markdown("<div style='margin-top: 25px; text-align: center;'>", unsafe_allow_html=True)
+    if st.button("🔄 Next Proverb"):
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
 # ========== Stats Page ========== #
 elif page == "Stats":
-    st.markdown("<div class='custom-box'>", unsafe_allow_html=True)
     st.subheader("📊 Submission Stats")
 
     stats = core.load_stats()
@@ -170,4 +140,3 @@ elif page == "Stats":
         sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
         for region, count in sorted_regions:
             st.markdown(f"- **{region}**: {count} proverbs")
-    st.markdown("</div>", unsafe_allow_html=True)
