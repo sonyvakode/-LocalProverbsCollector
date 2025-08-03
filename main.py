@@ -3,7 +3,7 @@ import random
 import base64
 from utils import core, translate, vote, audio, language
 
-# ========== Background Image Setup (Background.jpg with capital B) ========== #
+# ========== Background Image Setup ========== #
 def set_background(image_file):
     with open(image_file, "rb") as img:
         encoded = base64.b64encode(img.read()).decode()
@@ -13,13 +13,12 @@ def set_background(image_file):
             background-image: url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-attachment: fixed;
-            font-family: 'Segoe UI', sans-serif;
+            background-repeat: no-repeat;
+            background-position: center;
         }}
-        .main-container {{
-            background-color: rgba(255, 255, 255, 0.92);
-            padding: 2rem;
-            border-radius: 10px;
-            margin-top: 2rem;
+        .block-container {{
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }}
         </style>
     """, unsafe_allow_html=True)
@@ -37,14 +36,15 @@ page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
 
 # ========== Home Page ========== #
 if page == "Home":
-    st.markdown("""<div class='main-container'>""", unsafe_allow_html=True)
     st.markdown("""
-    <div style='padding: 10px; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500; color: #333;'>
-    Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
+    <div style='padding: 12px; background-color: rgba(255, 255, 255, 0.75); 
+                border-radius: 8px; font-weight: 500; color: #222;'>
+        Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
     </div>
     """, unsafe_allow_html=True)
 
-    proverb = st.text_area("✍️ Enter the proverb in local language")
+    st.markdown("### ✍️ Enter a proverb")
+    proverb = st.text_area("Write the proverb in your local language")
 
     lang = st.selectbox("🌐 Select Language", language.get_all_languages())
 
@@ -54,7 +54,7 @@ if page == "Home":
         if transcript:
             st.success("Transcribed Text:")
             st.write(transcript)
-            proverb = transcript
+            proverb = transcript  # Override with audio text
 
     region = st.selectbox("📍 Select Your Region (State/City)", [
         "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
@@ -70,6 +70,7 @@ if page == "Home":
 
     st.markdown("---")
     st.subheader("🌐 Translate a Proverb")
+
     input_text = st.text_input("Enter a proverb to translate")
     target_lang = st.selectbox("Translate to", language.get_all_languages())
 
@@ -79,12 +80,10 @@ if page == "Home":
             st.success(f"Translated: {translated}")
         else:
             st.warning("Please enter a proverb to translate.")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # ========== Proverb of the Day Page ========== #
 elif page == "Proverb of the day":
-    st.markdown("""<div class='main-container'>""", unsafe_allow_html=True)
-    st.subheader("📝 Proverb of the Day")
+    st.markdown("<h3 style='text-align: center;'>📝 Proverb of the Day</h3>", unsafe_allow_html=True)
 
     try:
         with open("data/proverbs.txt", "r", encoding="utf-8") as f:
@@ -99,29 +98,29 @@ elif page == "Proverb of the day":
 
         st.markdown(f"""
             <div style='
-                background-color: rgba(255,255,255,0.95);
-                padding: 25px;
-                border-radius: 12px;
-                margin-top: 20px;
-                font-size: 20px;
+                background-color: rgba(255, 255, 255, 0.7);
+                padding: 30px;
+                border-radius: 16px;
+                margin: 40px auto 30px auto;
+                font-size: 22px;
+                width: 80%;
+                color: #111;
                 text-align: center;
-                color: #222;
-                box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
             '>
-                <div><strong>Original:</strong><br> {selected_proverb}</div>
-                <div style='margin-top: 15px;'><strong>Translated:</strong><br> {translated}</div>
+                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div style='margin-top: 12px;'><strong>Translated:</strong> {translated}</div>
             </div>
         """, unsafe_allow_html=True)
     else:
         st.warning("No proverbs available in the file yet.")
 
+    st.markdown("<div style='text-align: center; margin-top: 30px;'>", unsafe_allow_html=True)
     if st.button("🔄 Next Proverb"):
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ========== Stats Page ========== #
 elif page == "Stats":
-    st.markdown("""<div class='main-container'>""", unsafe_allow_html=True)
     st.subheader("📊 Submission Stats")
 
     stats = core.load_stats()
@@ -142,4 +141,3 @@ elif page == "Stats":
         sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
         for region, count in sorted_regions:
             st.markdown(f"- **{region}**: {count} proverbs")
-    st.markdown("</div>", unsafe_allow_html=True)
