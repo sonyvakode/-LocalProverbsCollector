@@ -1,7 +1,16 @@
-def get_languages():
-    return [
-        "Hindi", "Telugu", "Tamil", "Kannada", "Bengali", "Marathi",
-        "Malayalam", "Gujarati", "Punjabi", "Urdu", "Assamese", "Odia",
-        "Sanskrit", "English", "Arabic", "French", "Spanish", "German",
-        "Chinese", "Japanese", "Russian", "Korean", "Portuguese", "Italian", "Turkish"
-    ]
+# utils/language.py
+
+def get_supported_languages():
+    return {
+        "English": "en",
+        "Hindi": "hi",
+        "Telugu": "te",
+        "Kannada": "kn",
+        "Tamil": "ta",
+        "Gujarati": "gu",
+        "Bengali": "bn",
+        "Marathi": "mr",
+        "Punjabi": "pa",
+        "Malayalam": "ml",
+        "Urdu": "ur"
+    }
