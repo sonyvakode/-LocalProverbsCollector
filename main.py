@@ -2,12 +2,22 @@ import streamlit as st
 import random
 from utils import core, translate, vote, audio, language
 
-# ========== Light Background Styling (No image) ========== #
+# ========== Light Transparent Background Styling ========== #
 st.markdown("""
     <style>
     .stApp {
-        background-color: #ffe6f0;
+        background-color: #fff5f8;
         font-family: 'Segoe UI', sans-serif;
+    }
+    .proverb-box {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-size: 22px;
+        text-align: center;
+        color: #333;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -66,15 +76,7 @@ elif page == "Proverb of the Day":
         translated = translate.translate_text(selected_proverb, display_lang)
 
         st.markdown(f"""
-            <div style='
-                background-color: rgba(255,255,255,0.85);
-                padding: 20px;
-                border-radius: 12px;
-                margin-top: 20px;
-                font-size: 22px;
-                text-align: center;
-                color: #333;
-            '>
+            <div class='proverb-box'>
                 <strong>{translated}</strong>
                 <div style='margin-top: 10px; font-size: 14px; color: #555;'>Language: {display_lang}</div>
             </div>
