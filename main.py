@@ -74,7 +74,7 @@ if page == "Home":
                 st.write("Transcribed:", proverb_from_audio)
                 proverb = proverb or proverb_from_audio
             if proverb and city:
-                def save_proverb(proverb, city, language):
+                core.save_proverb(proverb, city, lang)
                 st.success("✅ Proverb saved successfully!")
             else:
                 st.error("❌ Please provide both proverb and city/region.")
