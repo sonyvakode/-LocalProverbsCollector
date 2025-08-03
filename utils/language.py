@@ -1,17 +1,15 @@
-LANGUAGE_NAMES_TO_CODES = {
-    "english": "en",
-    "hindi": "hi",
-    "gujarati": "gu",
-    "tamil": "ta",
-    "telugu": "te",
-    "marathi": "mr",
-    "bengali": "bn",
-    "kannada": "kn",
-    "malayalam": "ml",
-    "punjabi": "pa",
-    "urdu": "ur",
-    "nepali": "ne",
-    "odia": "or",
-    "sanskrit": "sa",
-    "assamese": "as"
-}
+def get_all_languages():
+    return [
+        "en",   # English
+        "hi",   # Hindi
+        "ta",   # Tamil
+        "te",   # Telugu
+        "kn",   # Kannada
+        "ml",   # Malayalam
+        "gu",   # Gujarati
+        "mr",   # Marathi
+        "bn",   # Bengali
+        "pa",   # Punjabi
+        "ur",   # Urdu
+        "or",   # Odia
+    ]
