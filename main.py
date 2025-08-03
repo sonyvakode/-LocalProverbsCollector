@@ -29,6 +29,10 @@ def set_background(image_file):
             color: #111 !important;
             font-weight: 500 !important;
         }}
++       h3, h4, .stMarkdown h3, .stMarkdown h4 {{
++           color: #222 !important;
++           font-weight: 600 !important;
++       }}
         .solid-box {{
             background-color: #ffffffcc;
             padding: 1rem;
