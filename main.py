@@ -5,88 +5,76 @@ from utils import core, translate, vote, audio, language
 
 st.set_page_config(page_title="Indian Wisdom: Local Proverbs Collector", layout="centered")
 
-# Transparent background setup (uses Baground.jpg)
 def set_background(image_path):
     with open(image_path, "rb") as image_file:
         encoded = base64.b64encode(image_file.read()).decode()
-    st.markdown(f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/jpeg;base64,{encoded}");
-            background-size: cover;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-position: center;
-        }}
-        .block-container {{
-            background-color: rgba(255, 255, 255, 0.88);
-            padding: 2rem;
-            border-radius: 10px;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+    css = f"""
+    <style>
+    .stApp {{
+        background-image: url("data:image/jpeg;base64,{encoded}");
+        background-size: cover;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-position: center;
+        color: #111;
+    }}
+    .block-container {{
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 2rem;
+        border-radius: 1rem;
+    }}
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
-set_background("Baground.jpg")
+set_background("Background.jpg")
 
-# Load data
+st.title("📜 Indian Wisdom: Local Proverbs Collector")
+
+menu = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats", "Leadership"])
+
 all_proverbs = core.load_proverbs()
-all_stats = core.load_stats()
+stats = core.load_stats()
 
-# Sidebar Navigation
-page = st.sidebar.radio("Navigate", ["Home", "Proverb of the day", "Stats", "Leadership"])
+if menu == "Home":
+    st.header("📝 Submit a Proverb")
 
-# 🏠 Home Page: Submit a Proverb
-if page == "Home":
-    st.title("📜 Indian Wisdom: Local Proverbs Collector")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        user_proverb = st.text_input("Enter your proverb")
+    with col2:
+        region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central", "Northeast"])
 
-    st.subheader("📝 Submit a Proverb")
-    nickname = st.text_input("Enter your nickname")
-    proverb = st.text_area("Write a proverb")
-    region = st.selectbox("Select region", ["North", "South", "East", "West", "Central"])
-    audio_file = st.file_uploader("Or upload audio", type=["wav", "mp3", "m4a"])
-
-    if audio_file:
-        transcribed = audio.transcribe_audio(audio_file)
-        if transcribed:
-            st.success(f"Transcribed: {transcribed}")
-            proverb = transcribed
-
+    audio_file = st.file_uploader("Upload audio proverb", type=["mp3", "wav"])
     if st.button("Submit"):
-        if nickname and proverb:
-            core.save_proverb(nickname, proverb, region)
-            st.success("✅ Proverb submitted successfully!")
+        if user_proverb:
+            core.save_proverb(user_proverb, region)
+            st.success("Proverb saved!")
+        elif audio_file:
+            text = audio.transcribe_audio(audio_file)
+            if text:
+                core.save_proverb(text, region)
+                st.success("Audio proverb saved!")
+            else:
+                st.error("Could not transcribe audio.")
         else:
-            st.error("❌ Please enter both nickname and proverb.")
+            st.warning("Please enter a proverb or upload audio.")
 
-# 🌟 Proverb of the Day
-elif page == "Proverb of the day":
-    st.title("🌟 Proverb of the Day")
+elif menu == "Proverb of the day":
+    st.header("🌟 Proverb of the Day")
     if all_proverbs:
         selected_proverb = random.choice(all_proverbs)
-        proverb_text = selected_proverb.get("proverb", "")
-        lang_options = language.language_map.keys()
-        display_lang = st.selectbox("Choose language", lang_options)
-        translated = translate.translate_text(proverb_text, display_lang)
-        st.info(f"💬 {translated}")
+        display_lang = st.selectbox("Display in Language", ["en", "hi", "ta", "te", "bn"])
+        translated = translate.translate_text(selected_proverb, display_lang)
+        st.info(translated)
+        st.button("Next Proverb", on_click=st.experimental_rerun)
     else:
-        st.warning("No proverbs found.")
+        st.warning("No proverbs available.")
 
-# 📊 Stats Page
-elif page == "Stats":
-    st.title("📊 Submission Stats")
-    if all_stats:
-        st.write(f"Total Proverbs: {all_stats.get('total_proverbs', 0)}")
-        st.bar_chart(all_stats.get("region_counts", {}))
-    else:
-        st.warning("No stats available.")
+elif menu == "Stats":
+    st.header("📊 Proverbs Stats")
+    st.write(f"Total Proverbs Submitted: {len(all_proverbs)}")
 
-# 🏆 Leadership Page
-elif page == "Leadership":
-    st.title("🏆 Leadership Board")
-    leaderboard = vote.get_all()
-    if leaderboard:
-        sorted_leaders = sorted(leaderboard.items(), key=lambda x: x[1].get("likes", 0), reverse=True)
-        for i, (user, stats) in enumerate(sorted_leaders[:10], start=1):
-            st.markdown(f"**{i}. {user}** — 👍 {stats.get('likes', 0)} likes")
-    else:
-        st.warning("No leadership data found.")
+elif menu == "Leadership":
+    st.header("🏆 Leadership Board")
+    st.info("This section can showcase top contributors, popular regions, or more in future updates.")
