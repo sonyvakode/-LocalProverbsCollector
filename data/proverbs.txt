@@ -1,9 +1,27 @@
-Unity is strength|Tamil Nadu|Tamil|12|33
-एकता में बल है|Uttar Pradesh|Hindi|45|78
-Birds of a feather flock together|Kerala|English|23|50
-જેમ પેરી તેમ વેરો|Gujarat|Gujarati|18|41
-ಸಾಧನೆಗೆ ಶ್ರಮವೇ ಮಾರ್ಗ|Karnataka|Kannada|9|25
-తలచినదే సాధించవచ్చు|Andhra Pradesh|Telugu|14|30
-A stitch in time saves nine|Delhi|English|30|60
-धीरे-धीरे रे मना|Madhya Pradesh|Hindi|27|58
+Actions speak louder than words.
+निश्चित कार्य बोलने से ज्यादा प्रभावशाली होते हैं।  # Hindi
+ஒரு செயல் ஆயிரம் வார்த்தைகளுக்கு சமம்.  # Tamil
+చర్యలు మాటలకన్నా గొప్పవి.  # Telugu
+কর্ম কথার চেয়ে বড়।  # Bengali
+Kr̥tyāḥ vākyebhyaḥ śreyān.  # Sanskrit
 
+Unity is strength.
+एकता में बल है।  # Hindi
+ஒற்றுமை தான் பலம்.  # Tamil
+ఐక్యం శక్తి.  # Telugu
+একতাই শক্তি।  # Bengali
+Ekībhāvaḥ balam asti.  # Sanskrit
+
+Time and tide wait for none.
+समय और ज्वार किसी के लिए नहीं रुकते।  # Hindi
+நேரமும் அலைவும் யாரையும் காத்திருக்காது.  # Tamil
+కాలం గాలిలా పోతుంది, ఎవర్నీ ఆగదు.  # Telugu
+সময় ও জোয়ার কারো জন্য অপেক্ষা করে না।  # Bengali
+Kālaḥ ca samudravelā ca kasyāpi nāvalambate.  # Sanskrit
+
+Knowledge is power.
+ज्ञान ही शक्ति है।  # Hindi
+அறிவு சக்தி.  # Tamil
+జ్ఞానం శక్తి.  # Telugu
+জ্ঞান শক্তি।  # Bengali
+Jñānaṁ śaktiḥ.  # Sanskrit
