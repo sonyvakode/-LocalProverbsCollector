@@ -57,9 +57,8 @@ st.markdown(
 # Sidebar Navigation
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
 
-# Page: Home (Submit + Translate)
+# Page: Home
 if page == "Home":
-    # Submit Proverb
     st.markdown("<h3>💡 Submit Your Proverb</h3>", unsafe_allow_html=True)
     with st.form("submit_form"):
         proverb = st.text_area("Enter a local proverb")
@@ -77,7 +76,6 @@ if page == "Home":
             else:
                 st.error("❌ Please provide both proverb and city/region.")
 
-    # Translation Section
     st.markdown("<h3>🌍 Translate a Proverb</h3>", unsafe_allow_html=True)
     to_translate = st.text_input("Enter proverb to translate")
     target_lang = st.selectbox("Choose target language", language.get_all_languages(), key="translate_lang")
@@ -88,21 +86,45 @@ if page == "Home":
         else:
             st.warning("Enter a proverb to translate.")
 
-# Page: Proverb of the Day
+# ========== Proverb of the Day Page ==========
 elif page == "Proverb of the day":
-    all_proverbs = core.load_proverbs()
+    st.subheader("📝 Proverb of the day")
+
+    try:
+        with open("data/proverbs.txt", "r", encoding="utf-8") as f:
+            all_proverbs = [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        all_proverbs = []
+
     if all_proverbs:
-        st.markdown("<h3 style='text-align: center;'>📝 Proverb of the Day</h3>", unsafe_allow_html=True)
         selected_proverb = random.choice(all_proverbs)
-        st.markdown(
-            f"<div class='solid-box'><h5 style='text-align: center;'>{selected_proverb}</h5></div>",
-            unsafe_allow_html=True,
-        )
-        lang = st.selectbox("Select Language", language.get_all_languages())
-        translated = translate.translate_text(selected_proverb, lang)
-        st.markdown(f"**Translated:** {translated}")
-        if st.button("Next Proverb"):
-            st.experimental_rerun()
+        display_lang = "English"
+        translated = translate.translate_text(selected_proverb, display_lang)
+
+        st.markdown(f"""
+            <div style='
+                background-color: #ffffff;
+                padding: 24px;
+                border-radius: 10px;
+                margin: 30px auto 20px;
+                font-size: 18px;
+                color: #222;
+                width: 90%;
+                max-width: 700px;
+                text-align: center;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            '>
+                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div style='margin-top: 12px;'><strong>Translated:</strong> {translated}</div>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("No proverbs available in the file yet.")
+
+    st.markdown("<div style='margin-top: 25px; text-align: center;'>", unsafe_allow_html=True)
+    if st.button("🔄 Next Proverb"):
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Page: Stats
 elif page == "Stats":
