@@ -1,95 +1,111 @@
 import streamlit as st
-from utils import core, translate, vote, audio, language
 import random
+from utils import core, translate, vote, audio, language
 import os
 import base64
 
-# Set background from background.jpg
+# ========== Background ========== #
 def set_background(image_file):
-    with open(image_file, "rb") as img:
-        encoded = base64.b64encode(img.read()).decode()
-    bg_img = f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/jpg;base64,{encoded}");
-        background-size: cover;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        background-position: center;
-    }}
-    </style>
-    """
-    st.markdown(bg_img, unsafe_allow_html=True)
+    with open(image_file, "rb") as f:
+        data = f.read()
+        encoded = base64.b64encode(data).decode()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-# Load background
-if os.path.exists("background.jpg"):
-    set_background("background.jpg")
+set_background("background.jpg")  # make sure file exists
 
-# Sidebar-style navigation with st.selectbox
-st.title("📜 Indian Wisdom: Local Proverbs Collector")
+# ========== App Title ========== #
+st.markdown(
+    "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
+    unsafe_allow_html=True
+)
 
-pages = ["Submit Proverb", "Proverb of the Day", "Translate Proverb", "Stats"]
-page = st.selectbox("Choose a section", pages)
+# ========== Navigation ========== #
+page = st.sidebar.selectbox("📚 Navigate", ["Home", "Proverb of the Day", "Stats"])
 
-# Page 1: Submit Proverb
-if page == "Submit Proverb":
-    st.header("✍️ Share Your Local Proverb")
+# ========== Home Page ========== #
+if page == "Home":
+    st.subheader("✨ Submit a Local Proverb")
 
-    lang = st.selectbox("Select Language", language.languages())
-    region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central"])
-    proverb = st.text_area("Write your proverb here")
+    region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central", "Northeast"])
+    lang = st.selectbox("Select Language", language.get_all_languages())
+    proverb = st.text_area("Enter the proverb in local language")
 
-    audio_file = st.file_uploader("🎙️ Upload an audio file", type=["wav", "mp3", "ogg"])
-    if audio_file:
-        try:
-            transcribed = audio.transcribe_audio(audio_file)
-            st.success(f"Transcribed: {transcribed}")
-            proverb = transcribed
-        except Exception as e:
-            st.error(f"Transcription failed: {e}")
+    audio_file = st.file_uploader("🎤 Upload an audio proverb", type=["wav", "mp3", "m4a"])
+    if audio_file is not None:
+        transcript = audio.transcribe_audio(audio_file)
+        if transcript:
+            st.success("Transcribed Text:")
+            st.write(transcript)
+            proverb = transcript  # Override text area with audio text
 
-    if st.button("Submit"):
+    if st.button("✅ Submit Proverb"):
         if proverb.strip():
-            core.save_proverb(proverb, lang, region)
-            st.success("✅ Proverb submitted successfully!")
+            core.save_proverb(proverb.strip())
+            st.success("Proverb submitted successfully!")
         else:
-            st.warning("Please enter or upload a proverb first.")
+            st.warning("Please enter or upload a proverb before submitting.")
 
-# Page 2: Proverb of the Day
-elif page == "Proverb of the Day":
-    st.header("🌞 Proverb of the Day")
-    proverbs = core.load_proverbs()
-    if proverbs:
-        selected = random.choice(proverbs)
-        st.markdown(f"""
-            <div style="padding:20px; background-color:#ffffffcc; border-radius:12px; margin-top:10px;">
-                <h3 style="text-align:center;">“{selected['text']}”</h3>
-                <p style="text-align:center; font-style:italic;">Language: {selected['language']}</p>
-            </div>
-        """, unsafe_allow_html=True)
-        st.info("Refresh the page to see a new proverb.")
-    else:
-        st.warning("No proverbs available yet. Please add some!")
+    st.markdown("---")
+    st.subheader("🌐 Translate a Proverb")
+    input_text = st.text_input("Enter a proverb to translate")
+    target_lang = st.selectbox("Translate to", language.get_all_languages())
 
-# Page 3: Translate
-elif page == "Translate Proverb":
-    st.header("🌐 Translate a Proverb")
-    text = st.text_input("Enter a proverb to translate")
-    target_lang = st.selectbox("Translate to", language.languages())
-    if st.button("Translate"):
-        if text.strip():
-            translated = translate.translate_text(text, target_lang)
+    if st.button("🌍 Translate"):
+        if input_text.strip():
+            translated = translate.translate_text(input_text.strip(), target_lang)
             st.success(f"Translated: {translated}")
         else:
             st.warning("Please enter a proverb to translate.")
 
-# Page 4: Stats
-elif page == "Stats":
-    st.header("📊 Proverb Submission Stats")
-    stats = core.load_stats()
-    if stats:
-        total = sum(stats.values())
-        st.write(f"Total Proverbs Submitted: **{total}**")
-        st.bar_chart(stats)
+# ========== Proverb of the Day Page ========== #
+elif page == "Proverb of the Day":
+    st.subheader("🌟 Proverb of the Day")
+    proverbs = core.load_proverbs()
+    if proverbs:
+        selected_proverb = random.choice(proverbs)
+        display_lang = random.choice(language.get_all_languages())
+        translated = translate.translate_text(selected_proverb, display_lang)
+
+        st.markdown(f"""
+            <div style='
+                background-color: rgba(255,255,255,0.85);
+                padding: 20px;
+                border-radius: 12px;
+                margin-top: 20px;
+                font-size: 22px;
+                text-align: center;
+                color: #333;
+            '>
+                <strong>{translated}</strong>
+                <div style='margin-top: 10px; font-size: 14px; color: #555;'>Language: {display_lang}</div>
+            </div>
+        """, unsafe_allow_html=True)
     else:
-        st.info("No data available yet.")
+        st.warning("No proverbs submitted yet.")
+
+    if st.button("🔁 Next Proverb"):
+        st.experimental_rerun()
+
+# ========== Stats Page ========== #
+elif page == "Stats":
+    st.subheader("📊 Submission Stats")
+    stats = core.load_stats()
+    total = stats.get("total_submitted", 0)
+    st.info(f"📈 Total Proverbs Submitted: **{total}**")
+
+# ========== Footer ========== #
+st.markdown("<hr style='margin-top: 40px;'>", unsafe_allow_html=True)
+st.markdown("<center>Crafted with ❤️ to preserve Indian culture</center>", unsafe_allow_html=True)
