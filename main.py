@@ -13,6 +13,9 @@ def set_background(image_file):
     st.markdown(
         f"""
         <style>
+        html, body, [class*="css"] {{
+            color: #111 !important;
+        }}
         .stApp {{
             background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), 
                         url("data:image/jpg;base64,{encoded}");
@@ -21,7 +24,7 @@ def set_background(image_file):
         }}
         textarea, input, select {{
             background-color: white !important;
-            color: black !important;
+            color: #000 !important;
             border: 1px solid #ccc !important;
             border-radius: 5px !important;
         }}
@@ -29,10 +32,6 @@ def set_background(image_file):
             color: #111 !important;
             font-weight: 500 !important;
         }}
-+       h3, h4, .stMarkdown h3, .stMarkdown h4 {{
-+           color: #222 !important;
-+           font-weight: 600 !important;
-+       }}
         .solid-box {{
             background-color: #ffffffcc;
             padding: 1rem;
@@ -63,7 +62,7 @@ page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
 
 # Page: Home
 if page == "Home":
-    st.markdown("<h3>Submit Your Proverb</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: black;'>Submit Your Proverb</h3>", unsafe_allow_html=True)
     st.markdown("<p style='color: #444;'>Contribute local wisdom from your region, in your language or dialect. Help preserve India’s cultural voice.</p>", unsafe_allow_html=True)
 
     with st.form("submit_form"):
@@ -83,7 +82,7 @@ if page == "Home":
             else:
                 st.error("❌ Please provide both proverb and city/region.")
 
-    st.markdown("<h3>🌍 Translate a Proverb</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: black;'>🌍 Translate a Proverb</h3>", unsafe_allow_html=True)
     to_translate = st.text_input("Enter proverb to translate")
     target_lang = st.selectbox("Choose target language", language.get_all_languages(), key="translate_lang")
     if st.button("Translate"):
@@ -94,6 +93,7 @@ if page == "Home":
             st.warning("Enter a proverb to translate.")
 
 # ========== Proverb of the Day Page ==========
+
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the day")
 
@@ -115,7 +115,7 @@ elif page == "Proverb of the day":
                 border-radius: 10px;
                 margin: 30px auto 20px;
                 font-size: 18px;
-                color: #222;
+                color: #111;
                 width: 90%;
                 max-width: 700px;
                 text-align: center;
@@ -135,11 +135,11 @@ elif page == "Proverb of the day":
 
 # Page: Stats
 elif page == "Stats":
-    st.markdown("<h3>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: black;'>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
 
-    st.markdown("<h4>🏆 Leaderboard</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: black;'>🏆 Leaderboard</h4>", unsafe_allow_html=True)
     all = vote.get_all()
     region_counts = {}
     for item in all:
