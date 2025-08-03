@@ -1,107 +1,127 @@
 import streamlit as st
 import random
-import datetime
 import base64
-from utils import core, translate, vote, audio
+from utils import core, translate, vote, audio, language
 
-# -------------------- Background Setup --------------------
-def set_background(image_path):
-    try:
-        with open(image_path, "rb") as image_file:
-            bg_data = image_file.read()
-        bg_base64 = base64.b64encode(bg_data).decode()
-        page_bg = f"""
+# ========== Background Image Setup (Background.jpg with capital B) ========== #
+def set_background(image_file):
+    with open(image_file, "rb") as img:
+        encoded = base64.b64encode(img.read()).decode()
+    st.markdown(f"""
         <style>
-        [data-testid="stAppViewContainer"] {{
-            background-image: url("data:image/png;base64,{bg_base64}");
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{encoded}");
             background-size: cover;
-            background-repeat: no-repeat;
             background-attachment: fixed;
-            background-position: center;
-        }}
-        .proverb-text {{
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 1rem;
-            border-radius: 1rem;
-            font-size: 18px;
         }}
         </style>
-        """
-        st.markdown(page_bg, unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.error("⚠️ Background image not found. Please ensure 'Background.jpg' is present.")
+    """, unsafe_allow_html=True)
 
-set_background("Background.jpg")  # Make sure case matches your file exactly
+set_background("Background.jpg")
 
-# -------------------- Title --------------------
-st.markdown("<h1 style='text-align: center;'>📜 <b>Indian Wisdom: Local Proverbs Collector</b></h1>", unsafe_allow_html=True)
+# ========== App Title ========== #
+st.markdown(
+    "<h1 style='text-align: center; color: black;'>Indian Wisdom: Local Proverbs Collector</h1>",
+    unsafe_allow_html=True
+)
 
-# -------------------- Load Proverbs --------------------
-def load_proverbs():
+# ========== Navigation ========== #
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
+
+# ========== Home Page ========== #
+if page == "Home":
+    st.markdown("""
+    <div style='padding: 10px; background-color: rgba(255, 255, 255, 0.85); border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500; color: #333;'>
+    Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
+    </div>
+    """, unsafe_allow_html=True)
+
+    region = st.selectbox("Select Your Region (State/City)", [
+        "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
+        "Hyderabad", "Lucknow", "Jaipur", "Ahmedabad", "Patna"
+    ])
+    lang = st.selectbox("Select Language", language.get_all_languages())
+    proverb = st.text_area("Enter the proverb in local language")
+
+    audio_file = st.file_uploader("🎤 Upload an audio proverb", type=["wav", "mp3", "m4a"])
+    if audio_file is not None:
+        transcript = audio.transcribe_audio(audio_file)
+        if transcript:
+            st.success("Transcribed Text:")
+            st.write(transcript)
+            proverb = transcript  # Override text area with audio text
+
+    if st.button("✅ Submit Proverb"):
+        if proverb.strip():
+            core.save_proverb(proverb.strip())
+            st.success("Proverb submitted successfully!")
+        else:
+            st.warning("Please enter or upload a proverb before submitting.")
+
+    st.markdown("---")
+    st.subheader("🌐 Translate a Proverb")
+    input_text = st.text_input("Enter a proverb to translate")
+    target_lang = st.selectbox("Translate to", language.get_all_languages())
+
+    if st.button("🌍 Translate"):
+        if input_text.strip():
+            translated = translate.translate_text(input_text.strip(), target_lang)
+            st.success(f"Translated: {translated}")
+        else:
+            st.warning("Please enter a proverb to translate.")
+
+# ========== Proverb of the Day Page ========== #
+elif page == "Proverb of the day":
+    st.subheader("📝 Proverb of the day")
     try:
         with open("data/proverbs.txt", "r", encoding="utf-8") as f:
-            return [line.strip() for line in f if line.strip()]
+            all_proverbs = [line.strip() for line in f if line.strip()]
     except FileNotFoundError:
-        return []
+        all_proverbs = []
 
-all_proverbs = load_proverbs()
-
-# -------------------- Proverb of the Day --------------------
-st.subheader("📝 Proverb of the day")
-if all_proverbs:
-    today_index = datetime.datetime.now().timetuple().tm_yday % len(all_proverbs)
-    selected_proverb = all_proverbs[today_index]
-    st.markdown(f"<div class='proverb-text'>{selected_proverb}</div>", unsafe_allow_html=True)
-else:
-    selected_proverb = None
-    st.warning("No proverbs found.")
-
-# -------------------- Translate Section --------------------
-st.subheader("🌐 Translate a Proverb")
-display_lang = st.selectbox("Select language", ["en", "hi", "bn", "ta", "te", "gu", "ml", "mr", "pa"])
-if selected_proverb:
-    try:
+    if all_proverbs:
+        selected_proverb = random.choice(all_proverbs)
+        display_lang = "English"
         translated = translate.translate_text(selected_proverb, display_lang)
-        st.success(f"**Translated:** {translated}")
-    except Exception as e:
-        st.error(f"Translation failed: {e}")
-else:
-    st.info("No proverb available to translate.")
 
-# -------------------- Submit Section --------------------
-st.subheader("✍️ Submit a Proverb")
-with st.form("submit_form"):
-    new_proverb = st.text_area("Write a local proverb")
-    region = st.text_input("Which state or region?")
-    audio_file = st.file_uploader("Optional: Upload Audio", type=["wav", "mp3"])
-    submitted = st.form_submit_button("Submit")
-    if submitted:
-        if new_proverb:
-            core.save_proverb(new_proverb)
-            st.success("Proverb submitted successfully!")
-        if audio_file:
-            transcription = audio.transcribe_audio(audio_file)
-            st.info(f"Transcribed: {transcription}")
-
-# -------------------- Stats Section --------------------
-st.subheader("📊 Stats")
-stats = core.load_stats()
-st.write(f"Total Proverbs: {stats.get('count', 0)}")
-
-# -------------------- Leaderboard Section --------------------
-st.subheader("🏆 Leaderboard")
-all_votes = vote.get_all()
-
-if all_votes:
-    sorted_votes = sorted(all_votes, key=lambda x: (x.get("likes", 0), x.get("views", 0)), reverse=True)
-    for idx, item in enumerate(sorted_votes[:5], start=1):
-        st.markdown(
-            f"""
-            <div style='padding:10px; background-color:#f9f9f9; border-radius:10px; margin-bottom:10px;'>
-                <b>#{idx}</b> — {item.get("proverb", "No text")}
-                <br>❤️ {item.get("likes", 0)} &nbsp;&nbsp; 👁️ {item.get("views", 0)}
+        st.markdown(f"""
+            <div style='
+                background-color: rgba(255,255,255,0.9);
+                padding: 20px;
+                border-radius: 12px;
+                margin-top: 20px;
+                font-size: 20px;
+                color: #333;
+            '>
+                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div style='margin-top: 10px;'><strong>Translated:</strong> {translated}</div>
             </div>
-            """, unsafe_allow_html=True
-        )
-else:
-    st.info("No leaderboard data available yet.")
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("No proverbs available in the file yet.")
+
+    if st.button("🔄 Next Proverb"):
+        st.rerun()
+
+# ========== Stats Page ========== #
+elif page == "Stats":
+    st.subheader("📊 Submission Stats")
+
+    stats = core.load_stats()
+    total = stats.get("total_submitted", 0)
+    st.info(f"📈 Total Proverbs Submitted: **{total}**")
+
+    region_filter = st.selectbox("Filter by Region (Optional)", [
+        "All", "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
+        "Hyderabad", "Lucknow", "Jaipur", "Ahmedabad", "Patna"
+    ])
+
+    region_counts = stats.get("regions", {})
+    if region_filter != "All":
+        count = region_counts.get(region_filter, 0)
+        st.success(f"📍 Proverbs from **{region_filter}**: **{count}**")
+    else:
+        st.markdown("### 🏆 Leaderboard by Region")
+        sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
+        for region, count in sorted_regions:
+            st.markdown(f"- **{region}**: {count} proverbs")
