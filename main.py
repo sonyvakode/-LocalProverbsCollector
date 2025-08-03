@@ -5,17 +5,20 @@ from utils import core, translate, vote, audio, language
 
 # ========== Background Image Setup (Background.jpg with capital B) ========== #
 def set_background(image_file):
-    with open(image_file, "rb") as img:
-        encoded = base64.b64encode(img.read()).decode()
-    st.markdown(f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{encoded}");
-            background-size: cover;
-            background-attachment: fixed;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+    try:
+        with open(image_file, "rb") as img:
+            encoded = base64.b64encode(img.read()).decode()
+        st.markdown(f"""
+            <style>
+            .stApp {{
+                background-image: url("data:image/jpg;base64,{encoded}");
+                background-size: cover;
+                background-attachment: fixed;
+            }}
+            </style>
+        """, unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("⚠️ Background image not found. Please ensure 'Background.jpg' exists.")
 
 set_background("Background.jpg")
 
