@@ -2,14 +2,16 @@ import streamlit as st
 import random
 from utils import core, translate, vote, audio, language
 
-# ========== Transparent Light Background ========== #
-st.markdown("""
+# ========== Light Transparent Background via CSS ========== #
+st.markdown(
+    """
     <style>
     .stApp {
-        background-color: rgba(255, 192, 203, 0.15);
+        background-color: rgba(255, 228, 235, 0.25); /* light pink transparent */
     }
     </style>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
 
 # ========== App Title ========== #
@@ -23,9 +25,19 @@ page = st.sidebar.selectbox("📚 Navigate", ["Home", "Proverb of the Day", "Sta
 
 # ========== Home Page ========== #
 if page == "Home":
-    st.subheader("✨ Submit a Local Proverb")
+    st.markdown("""
+        <div style='padding: 10px; background-color: #f9f9f9; border-left: 5px solid #6c63ff; border-radius: 5px;'>
+            <strong>Local proverbs</strong> are cultural gems passed down through generations. 
+            They reflect the wisdom, humor, and traditions of specific Indian communities.
+            Share a proverb from your city, town, or village to help preserve our diverse heritage.
+        </div>
+    """, unsafe_allow_html=True)
 
-    region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central", "Northeast"])
+    region = st.selectbox("Select City or State", [
+        "Mumbai", "Delhi", "Kolkata", "Chennai", "Bengaluru", "Hyderabad",
+        "Ahmedabad", "Jaipur", "Lucknow", "Patna", "Bhopal", "Guwahati",
+        "Chandigarh", "Pune", "Varanasi", "Amritsar", "Ranchi", "Thiruvananthapuram"
+    ])
     lang = st.selectbox("Select Language", language.get_all_languages())
     proverb = st.text_area("Enter the proverb in local language")
 
@@ -91,3 +103,5 @@ elif page == "Stats":
     stats = core.load_stats()
     total = stats.get("total_submitted", 0)
     st.info(f"📈 Total Proverbs Submitted: **{total}**")
+
+# ========== Footer Removed ========== #
