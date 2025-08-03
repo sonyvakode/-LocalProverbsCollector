@@ -1,40 +1,24 @@
 import os
 import json
 
-PROVERB_FILE = "data/proverbs.txt"
-STATS_FILE = "data/stats.json"
+def save_proverb(proverb, city, language):
+    os.makedirs("data", exist_ok=True)
+    
+    # Save to proverbs.txt
+    with open("data/proverbs.txt", "a", encoding="utf-8") as f:
+        f.write(proverb.strip() + "\n")
 
-def save_proverb(text, language, region):
-    if not os.path.exists("data"):
-        os.makedirs("data")
+    # Save stats to stats.json
+    stats_path = "data/stats.json"
+    if os.path.exists(stats_path):
+        with open(stats_path, "r", encoding="utf-8") as f:
+            stats = json.load(f)
+    else:
+        stats = {"total_submitted": 0, "regions": {}, "languages": {}}
 
-    # Save proverb
-    with open(PROVERB_FILE, "a", encoding="utf-8") as f:
-        f.write(f"{text}||{language}||{region}\n")
+    stats["total_submitted"] = stats.get("total_submitted", 0) + 1
+    stats["regions"][city] = stats["regions"].get(city, 0) + 1
+    stats["languages"][language] = stats["languages"].get(language, 0) + 1
 
-    # Update stats
-    stats = load_stats()
-    stats[language] = stats.get(language, 0) + 1
-    with open(STATS_FILE, "w", encoding="utf-8") as f:
-        json.dump(stats, f)
-
-def load_proverbs():
-    if not os.path.exists(PROVERB_FILE):
-        return []
-    proverbs = []
-    with open(PROVERB_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            parts = line.strip().split("||")
-            if len(parts) == 3:
-                proverbs.append({
-                    "text": parts[0],
-                    "language": parts[1],
-                    "region": parts[2]
-                })
-    return proverbs
-
-def load_stats():
-    if not os.path.exists(STATS_FILE):
-        return {}
-    with open(STATS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    with open(stats_path, "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
