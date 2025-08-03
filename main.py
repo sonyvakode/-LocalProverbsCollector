@@ -1,19 +1,21 @@
 import streamlit as st
 import random
+import time
+from datetime import datetime, timedelta
 from utils import core, translate, vote, audio, language
 
 # ========== Transparent Light Background Styling ========== #
 st.markdown("""
     <style>
     .stApp {
-        background-color: rgba(255, 240, 245, 0.2);  /* Light pink with transparency */
+        background-color: rgba(255, 240, 245, 0.2);  /* Light transparent background */
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ========== App Title ========== #
+# ========== Bold Centered Title ========== #
 st.markdown(
-    "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
+    "<h1 style='text-align: center; font-weight: bold; color: black;'>Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
 
@@ -41,7 +43,7 @@ if page == "Home":
         if transcript:
             st.success("Transcribed Text:")
             st.write(transcript)
-            proverb = transcript  # Override text area with audio text
+            proverb = transcript
 
     if st.button("✅ Submit Proverb"):
         if proverb.strip():
@@ -65,11 +67,22 @@ if page == "Home":
 # ========== Proverb of the Day Page ========== #
 elif page == "Today’s Featured Proverb":
     st.subheader("📝 Today’s Featured Proverb")
+
+    # Load proverbs
     proverbs = core.load_proverbs()
     if proverbs:
-        selected_proverb = random.choice(proverbs)
-        display_lang = "English"
-        translated = translate.translate_text(selected_proverb, display_lang)
+        now = datetime.now()
+        if 'proverb_of_the_day' not in st.session_state or 'timestamp' not in st.session_state:
+            st.session_state.proverb_of_the_day = random.choice(proverbs)
+            st.session_state.timestamp = now
+        else:
+            elapsed = now - st.session_state.timestamp
+            if elapsed > timedelta(hours=24):  # change daily
+                st.session_state.proverb_of_the_day = random.choice(proverbs)
+                st.session_state.timestamp = now
+
+        proverb = st.session_state.proverb_of_the_day
+        translated = translate.translate_text(proverb, "English")
 
         st.markdown(f"""
             <div style='
@@ -80,7 +93,7 @@ elif page == "Today’s Featured Proverb":
                 font-size: 20px;
                 color: #333;
             '>
-                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div><strong>Original:</strong> {proverb}</div>
                 <div style='margin-top: 10px;'><strong>Translated:</strong> {translated}</div>
             </div>
         """, unsafe_allow_html=True)
@@ -88,6 +101,8 @@ elif page == "Today’s Featured Proverb":
         st.warning("No proverbs submitted yet.")
 
     if st.button("🔄 Next Proverb"):
+        st.session_state.proverb_of_the_day = random.choice(proverbs)
+        st.session_state.timestamp = datetime.now()
         st.rerun()
 
 # ========== Stats Page ========== #
