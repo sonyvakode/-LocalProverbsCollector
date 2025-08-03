@@ -21,7 +21,7 @@ set_background("Background.jpg")
 
 # ========== App Title ========== #
 st.markdown(
-    "<h1 style='text-align: center; color: black;'>Indian Wisdom: Local Proverbs Collector</h1>",
+    "<h1 style='text-align: center; color: black;'>🧠 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
 
@@ -36,12 +36,9 @@ if page == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    region = st.selectbox("Select Your Region (State/City)", [
-        "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
-        "Hyderabad", "Lucknow", "Jaipur", "Ahmedabad", "Patna"
-    ])
-    lang = st.selectbox("Select Language", language.get_all_languages())
-    proverb = st.text_area("Enter the proverb in local language")
+    proverb = st.text_area("✍️ Enter the proverb in local language")
+
+    lang = st.selectbox("🌐 Select Language", language.get_all_languages())
 
     audio_file = st.file_uploader("🎤 Upload an audio proverb", type=["wav", "mp3", "m4a"])
     if audio_file is not None:
@@ -49,7 +46,12 @@ if page == "Home":
         if transcript:
             st.success("Transcribed Text:")
             st.write(transcript)
-            proverb = transcript  # Override text area with audio text
+            proverb = transcript  # Override with audio text
+
+    region = st.selectbox("📍 Select Your Region (State/City)", [
+        "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
+        "Hyderabad", "Lucknow", "Jaipur", "Ahmedabad", "Patna"
+    ])
 
     if st.button("✅ Submit Proverb"):
         if proverb.strip():
