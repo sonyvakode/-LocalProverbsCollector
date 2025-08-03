@@ -4,28 +4,28 @@ import time
 from datetime import datetime, timedelta
 from utils import core, translate, vote, audio, language
 
-# ========== Transparent Light Background Styling ========== #
+# === Transparent Background ===
 st.markdown("""
     <style>
     .stApp {
-        background-color: rgba(255, 240, 245, 0.2);  /* Light transparent background */
+        background-color: rgba(255, 255, 255, 0.8);
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ========== Bold Centered Title ========== #
+# === Centered App Title ===
 st.markdown(
-    "<h1 style='text-align: center; font-weight: bold; color: black;'>Indian Wisdom: Local Proverbs Collector</h1>",
+    "<h1 style='text-align: center; font-weight: bold;'>Proverb of the Day</h1>",
     unsafe_allow_html=True
 )
 
-# ========== Navigation ========== #
-page = st.sidebar.selectbox("📚 Navigate", ["Home", "Today’s Featured Proverb", "Stats"])
+# === Sidebar Navigation ===
+page = st.sidebar.selectbox("Navigate", ["Home", "Today’s Proverb", "Stats"])
 
-# ========== Home Page ========== #
+# === Home Page ===
 if page == "Home":
     st.markdown("""
-    <div style='padding: 10px; background-color: #fff7e6; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500;'>
+    <div style='padding: 10px; background-color: #fff9e6; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500;'>
     Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
     </div>
     """, unsafe_allow_html=True)
@@ -45,7 +45,7 @@ if page == "Home":
             st.write(transcript)
             proverb = transcript
 
-    if st.button("✅ Submit Proverb"):
+    if st.button("Submit Proverb"):
         if proverb.strip():
             core.save_proverb(proverb.strip())
             st.success("Proverb submitted successfully!")
@@ -64,11 +64,10 @@ if page == "Home":
         else:
             st.warning("Please enter a proverb to translate.")
 
-# ========== Proverb of the Day Page ========== #
-elif page == "Today’s Featured Proverb":
-    st.subheader("📝 Today’s Featured Proverb")
+# === Today’s Proverb Page ===
+elif page == "Today’s Proverb":
+    st.subheader("🪷 Wisdom for Today")
 
-    # Load proverbs
     proverbs = core.load_proverbs()
     if proverbs:
         now = datetime.now()
@@ -77,7 +76,7 @@ elif page == "Today’s Featured Proverb":
             st.session_state.timestamp = now
         else:
             elapsed = now - st.session_state.timestamp
-            if elapsed > timedelta(hours=24):  # change daily
+            if elapsed > timedelta(hours=24):  # auto change daily
                 st.session_state.proverb_of_the_day = random.choice(proverbs)
                 st.session_state.timestamp = now
 
@@ -86,26 +85,27 @@ elif page == "Today’s Featured Proverb":
 
         st.markdown(f"""
             <div style='
-                background-color: rgba(255,255,255,0.9);
+                background-color: #ffffffdd;
                 padding: 20px;
                 border-radius: 12px;
-                margin-top: 20px;
                 font-size: 20px;
                 color: #333;
+                margin-top: 10px;
             '>
                 <div><strong>Original:</strong> {proverb}</div>
-                <div style='margin-top: 10px;'><strong>Translated:</strong> {translated}</div>
+                <div style='margin-top: 10px;'><strong>English:</strong> {translated}</div>
             </div>
         """, unsafe_allow_html=True)
-    else:
-        st.warning("No proverbs submitted yet.")
 
-    if st.button("🔄 Next Proverb"):
+    else:
+        st.warning("No proverbs available yet.")
+
+    if st.button("Next Proverb"):
         st.session_state.proverb_of_the_day = random.choice(proverbs)
         st.session_state.timestamp = datetime.now()
         st.rerun()
 
-# ========== Stats Page ========== #
+# === Stats Page ===
 elif page == "Stats":
     st.subheader("📊 Submission Stats")
 
