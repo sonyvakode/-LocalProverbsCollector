@@ -2,25 +2,15 @@ import streamlit as st
 import random
 from utils import core, translate, vote, audio, language
 
-# ========== Light Transparent Background Styling ========== #
+# ========== Transparent Light Background ========== #
 st.markdown("""
     <style>
     .stApp {
-        background-color: #fff5f8;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    .proverb-box {
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 20px;
-        border-radius: 15px;
-        margin-top: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        font-size: 22px;
-        text-align: center;
-        color: #333;
+        background-color: rgba(255, 192, 203, 0.15);
     }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True
+)
 
 # ========== App Title ========== #
 st.markdown(
@@ -76,7 +66,15 @@ elif page == "Proverb of the Day":
         translated = translate.translate_text(selected_proverb, display_lang)
 
         st.markdown(f"""
-            <div class='proverb-box'>
+            <div style='
+                background-color: rgba(255,255,255,0.85);
+                padding: 20px;
+                border-radius: 12px;
+                margin-top: 20px;
+                font-size: 22px;
+                text-align: center;
+                color: #333;
+            '>
                 <strong>{translated}</strong>
                 <div style='margin-top: 10px; font-size: 14px; color: #555;'>Language: {display_lang}</div>
             </div>
@@ -85,7 +83,7 @@ elif page == "Proverb of the Day":
         st.warning("No proverbs submitted yet.")
 
     if st.button("🔁 Next Proverb"):
-        st.experimental_rerun()
+        st.rerun()
 
 # ========== Stats Page ========== #
 elif page == "Stats":
