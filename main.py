@@ -131,3 +131,13 @@ elif page == "Stats":
     st.markdown("<h3>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
+
+    # Leaderboard (Top Cities by Proverb Count)
+    city_counts = stats.get("city_counts", {})
+    if city_counts:
+        sorted_cities = sorted(city_counts.items(), key=lambda x: x[1], reverse=True)
+        st.markdown("### 🏆 Top Contributing Cities")
+        for i, (city, count) in enumerate(sorted_cities[:5], start=1):
+            st.markdown(f"**{i}. {city}** — {count} proverbs")
+    else:
+        st.info("No city contribution data available yet.")
