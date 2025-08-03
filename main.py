@@ -1,41 +1,37 @@
 import streamlit as st
 import random
-from utils import core, translate, vote, audio, language
 import base64
+from utils import core, translate, vote, audio, language
 
-# ========== Set Light Background Image from Background.jpg ==========
+# ========== Background Image Setup (Background.jpg with capital B) ========== #
 def set_background(image_file):
-    with open(image_file, "rb") as f:
-        data = f.read()
-        encoded = base64.b64encode(data).decode()
-        st.markdown(f"""
-            <style>
-                .stApp {{
-                    background-image: url("data:image/jpg;base64,{encoded}");
-                    background-size: cover;
-                    background-repeat: no-repeat;
-                    background-attachment: fixed;
-                }}
-            </style>
-        """, unsafe_allow_html=True)
+    with open(image_file, "rb") as img:
+        encoded = base64.b64encode(img.read()).decode()
+    st.markdown(f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-attachment: fixed;
+        }}
+        </style>
+    """, unsafe_allow_html=True)
 
-set_background("Background.jpg")  # Make sure this matches the capital 'B'
+set_background("Background.jpg")
 
 # ========== App Title ========== #
-st.markdown("""
-<div style='text-align: center; margin-top: -30px;'>
-    <img src='https://cdn-icons-png.flaticon.com/512/29/29302.png' width='60' style='margin-bottom: -10px;' />
-</div>
-<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; color: black;'>Indian Wisdom: Local Proverbs Collector</h1>",
+    unsafe_allow_html=True
+)
 
-# ========== Navigation ==========
-page = st.sidebar.selectbox("📚 Navigate", ["Home", "Proverb of the day", "Stats"])
+# ========== Navigation ========== #
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
 
-# ========== Home Page ==========
+# ========== Home Page ========== #
 if page == "Home":
     st.markdown("""
-    <div style='padding: 10px; background-color: #fff7e6; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500;'>
+    <div style='padding: 10px; background-color: rgba(255, 255, 255, 0.85); border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500; color: #333;'>
     Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
     </div>
     """, unsafe_allow_html=True)
@@ -74,12 +70,17 @@ if page == "Home":
         else:
             st.warning("Please enter a proverb to translate.")
 
-# ========== Proverb of the Day Page ==========
+# ========== Proverb of the Day Page ========== #
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the day")
-    proverbs = core.load_proverbs()
-    if proverbs:
-        selected_proverb = random.choice(proverbs)
+    try:
+        with open("data/proverbs.txt", "r", encoding="utf-8") as f:
+            all_proverbs = [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        all_proverbs = []
+
+    if all_proverbs:
+        selected_proverb = random.choice(all_proverbs)
         display_lang = "English"
         translated = translate.translate_text(selected_proverb, display_lang)
 
@@ -97,12 +98,12 @@ elif page == "Proverb of the day":
             </div>
         """, unsafe_allow_html=True)
     else:
-        st.warning("No proverbs submitted yet.")
+        st.warning("No proverbs available in the file yet.")
 
     if st.button("🔄 Next Proverb"):
         st.rerun()
 
-# ========== Stats Page ==========
+# ========== Stats Page ========== #
 elif page == "Stats":
     st.subheader("📊 Submission Stats")
 
