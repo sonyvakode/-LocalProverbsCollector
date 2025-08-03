@@ -1,20 +1,17 @@
-LANGUAGES = {
-    "English": "en",
-    "Hindi": "hi",
-    "Tamil": "ta",
-    "Telugu": "te",
-    "Kannada": "kn",
-    "Gujarati": "gu",
-    "Marathi": "mr",
-    "Bengali": "bn",
-    "Malayalam": "ml",
-    "Punjabi": "pa",
-    "Urdu": "ur",
-    "Odia": "or"
+LANGUAGE_NAMES_TO_CODES = {
+    "english": "en",
+    "hindi": "hi",
+    "gujarati": "gu",
+    "tamil": "ta",
+    "telugu": "te",
+    "marathi": "mr",
+    "bengali": "bn",
+    "kannada": "kn",
+    "malayalam": "ml",
+    "punjabi": "pa",
+    "urdu": "ur",
+    "nepali": "ne",
+    "odia": "or",
+    "sanskrit": "sa",
+    "assamese": "as"
 }
-
-def get_language_code(language_name):
-    return LANGUAGES.get(language_name, "en")
-
-def get_all_languages():
-    return list(LANGUAGES.keys())
