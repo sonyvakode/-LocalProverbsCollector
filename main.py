@@ -14,6 +14,11 @@ def set_background(image_file):
             background-size: cover;
             background-attachment: fixed;
         }}
+        .stMarkdown, .stTextInput, .stTextArea, .stSelectbox, .stFileUploader {{
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -21,7 +26,7 @@ set_background("Background.jpg")
 
 # ========== App Title ========== #
 st.markdown(
-    "<h1 style='text-align: center; color: black;'>Indian Wisdom: Local Proverbs Collector</h1>",
+    "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
 
@@ -81,8 +86,11 @@ elif page == "Proverb of the day":
 
     if all_proverbs:
         selected_proverb = random.choice(all_proverbs)
-        display_lang = "English"
-        translated = translate.translate_text(selected_proverb, display_lang)
+        display_lang = "en"
+        try:
+            translated = translate.translate_text(selected_proverb, display_lang)
+        except Exception:
+            translated = "⚠️ Translation unavailable."
 
         st.markdown(f"""
             <div style='
