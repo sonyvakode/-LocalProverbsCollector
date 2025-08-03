@@ -2,17 +2,14 @@ import streamlit as st
 import random
 from utils import core, translate, vote, audio, language
 
-# ========== Light Transparent Background via CSS ========== #
-st.markdown(
-    """
+# ========== Transparent Light Background Styling ========== #
+st.markdown("""
     <style>
     .stApp {
-        background-color: rgba(255, 228, 235, 0.25); /* light pink transparent */
+        background-color: rgba(255, 240, 245, 0.2);  /* Light pink with transparency */
     }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 # ========== App Title ========== #
 st.markdown(
@@ -26,17 +23,14 @@ page = st.sidebar.selectbox("📚 Navigate", ["Home", "Proverb of the Day", "Sta
 # ========== Home Page ========== #
 if page == "Home":
     st.markdown("""
-        <div style='padding: 10px; background-color: #f9f9f9; border-left: 5px solid #6c63ff; border-radius: 5px;'>
-            <strong>Local proverbs</strong> are cultural gems passed down through generations. 
-            They reflect the wisdom, humor, and traditions of specific Indian communities.
-            Share a proverb from your city, town, or village to help preserve our diverse heritage.
-        </div>
+    <div style='padding: 10px; background-color: #fff7e6; border-left: 5px solid #f4b400; border-radius: 5px; font-weight: 500;'>
+    ✨ Local proverbs carry the timeless wisdom and vibrant culture of every Indian region—share yours!
+    </div>
     """, unsafe_allow_html=True)
 
-    region = st.selectbox("Select City or State", [
-        "Mumbai", "Delhi", "Kolkata", "Chennai", "Bengaluru", "Hyderabad",
-        "Ahmedabad", "Jaipur", "Lucknow", "Patna", "Bhopal", "Guwahati",
-        "Chandigarh", "Pune", "Varanasi", "Amritsar", "Ranchi", "Thiruvananthapuram"
+    region = st.selectbox("Select Your Region (State/City)", [
+        "Delhi", "Mumbai", "Chennai", "Kolkata", "Bengaluru",
+        "Hyderabad", "Lucknow", "Jaipur", "Ahmedabad", "Patna"
     ])
     lang = st.selectbox("Select Language", language.get_all_languages())
     proverb = st.text_area("Enter the proverb in local language")
@@ -103,5 +97,3 @@ elif page == "Stats":
     stats = core.load_stats()
     total = stats.get("total_submitted", 0)
     st.info(f"📈 Total Proverbs Submitted: **{total}**")
-
-# ========== Footer Removed ========== #
