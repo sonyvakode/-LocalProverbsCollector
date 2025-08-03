@@ -1,10 +1,11 @@
 import streamlit as st
 import base64
+import random
 from utils import core, translate, vote, audio
 
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# Set background image
+# --- Set Background ---
 def set_background(image_file):
     with open(image_file, "rb") as img_file:
         b64_img = base64.b64encode(img_file.read()).decode()
@@ -17,26 +18,38 @@ def set_background(image_file):
             background-repeat: no-repeat;
             background-attachment: fixed;
         }}
-        .title-style {{
+        .main-title {{
             font-size: 40px;
             text-align: center;
-            padding: 10px;
+            padding: 15px;
         }}
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-set_background("Background.jpg")  # Correct casing!
+set_background("Background.jpg")  # ✅ Case-sensitive!
 
-# Title with book emoji
-st.markdown('<div class="title-style">📘 Indian Wisdom: Local Proverbs Collector</div>', unsafe_allow_html=True)
+# --- Title with Book Icon ---
+st.markdown('<div class="main-title">📘 Indian Wisdom: Local Proverbs Collector</div>', unsafe_allow_html=True)
 
-st.markdown("### 📝 Submit a Local Proverb")
-with st.form("submit_proverb_form"):
-    proverb = st.text_area("Enter a local proverb")
-    region = st.selectbox("Select region", ["North", "South", "East", "West", "Central", "Northeast"])
-    audio_file = st.file_uploader("Upload audio of the proverb (optional)", type=["wav", "mp3", "m4a"])
+# --- Proverb of the Day ---
+st.markdown("### 🌞 Proverb of the Day")
+all_proverbs = vote.get_all()
+if all_proverbs:
+    random_proverb = random.choice(all_proverbs)
+    st.info(f"_{random_proverb['proverb']}_")
+else:
+    st.warning("No proverbs available yet.")
+
+st.markdown("---")
+
+# --- Submit a Local Proverb ---
+st.markdown("### ✍️ Submit a Local Proverb")
+with st.form("submit_form"):
+    proverb = st.text_area("Enter the proverb here")
+    region = st.selectbox("Select Region", ["North", "South", "East", "West", "Central", "Northeast"])
+    audio_file = st.file_uploader("Optional: Upload audio", type=["wav", "mp3", "m4a"])
     submitted = st.form_submit_button("Submit")
     if submitted and proverb:
         core.save_proverb(proverb, region)
@@ -46,25 +59,28 @@ with st.form("submit_proverb_form"):
             if transcription:
                 st.markdown(f"**Transcription:** _{transcription}_")
             else:
-                st.error("⚠️ Could not transcribe audio.")
+                st.warning("❌ Transcription failed.")
 
 st.markdown("---")
 
+# --- Translate Section ---
 st.markdown("### 🌐 Translate a Proverb")
 to_translate = st.text_input("Enter a proverb to translate")
-target_lang = st.selectbox("Choose language", ["hi", "ta", "te", "bn", "ml", "gu", "mr", "kn"])
+target_lang = st.selectbox("Translate to", ["hi", "bn", "ta", "te", "gu", "ml", "mr", "kn"])
 if st.button("Translate"):
     if to_translate:
-        result = translate.translate_proverb(to_translate, target_lang)
-        st.success(f"**Translated Proverb:** {result}")
+        translated = translate.translate_proverb(to_translate, target_lang)
+        st.success(f"**Translated Proverb:** {translated}")
     else:
-        st.warning("Please enter a proverb to translate.")
+        st.warning("Please enter a proverb.")
 
 st.markdown("---")
 
+# --- Stats Section ---
 st.markdown("### 📊 Submission Stats")
 try:
     stats = core.load_stats()
-    st.write(f"**Total Proverbs Submitted:** {stats.get('total_proverbs', 0)}")
-except Exception as e:
-    st.error("Could not load stats.")
+    total = stats.get("total_proverbs", 0)
+    st.write(f"**Total Proverbs Submitted:** {total}")
+except:
+    st.warning("⚠️ Could not load stats.")
