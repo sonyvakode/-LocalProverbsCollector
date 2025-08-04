@@ -67,8 +67,8 @@ if page == "Home":
 
     with st.form("submit_form"):
         proverb = st.text_area("Enter a local proverb")
-        meaning = st.text_area("Write the meaning of the proverb")  # already added previously
-        city = st.selectbox(  # ✅ changed to selectbox
+        meaning = st.text_area("Write the meaning of the proverb")  # optional field
+        city = st.selectbox(
             "Name of the City or Region", 
             ["Select", "Hyderabad", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Delhi", "Other"]
         )
@@ -81,7 +81,7 @@ if page == "Home":
                 st.write("Transcribed:", proverb_from_audio)
                 proverb = proverb or proverb_from_audio
             if proverb and city != "Select":
-                core.save_proverb(proverb, city, lang, meaning=meaning)
+                core.save_proverb(proverb, city, lang)  # ✅ FIXED: removed unsupported keyword argument
                 st.success("✅ Proverb saved successfully!")
             else:
                 st.error("❌ Please provide both proverb and city/region.")
@@ -138,7 +138,7 @@ elif page == "Proverb of the day":
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Page: States
-elif page == "States":  # ✅ updated label
+elif page == "States":
     st.markdown("<h3 style='color: black;'>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
