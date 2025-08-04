@@ -3,10 +3,8 @@ import random
 import base64
 from utils import core, translate, vote, audio, language
 
-# Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# Light background setup
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -51,23 +49,20 @@ def set_background(image_file):
 
 set_background("Background.jpg")
 
-# Title
 st.markdown(
     "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
 
-# Sidebar Navigation
-page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])  # ✅ changed from Stats to States
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
 
-# Page: Home
 if page == "Home":
     st.markdown("<h3 style='color: black;'>Submit Your Proverb</h3>", unsafe_allow_html=True)
     st.markdown("<p style='color: #444;'>Contribute local wisdom from your region, in your language or dialect. Help preserve India’s cultural voice.</p>", unsafe_allow_html=True)
 
     with st.form("submit_form"):
         proverb = st.text_area("Enter a local proverb")
-        meaning = st.text_area("Write the meaning of the proverb")  # optional field
+        meaning = st.text_area("Write the meaning of the proverb")
         city = st.selectbox(
             "Name of the City or Region", 
             ["Select", "Hyderabad", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Delhi", "Other"]
@@ -81,7 +76,7 @@ if page == "Home":
                 st.write("Transcribed:", proverb_from_audio)
                 proverb = proverb or proverb_from_audio
             if proverb and city != "Select":
-                core.save_proverb(proverb, city, lang, meaning=meaning)  # ✅ Restored meaning
+                core.save_proverb(proverb, city, lang, meaning)
                 st.success("✅ Proverb saved successfully!")
             else:
                 st.error("❌ Please provide both proverb and city/region.")
@@ -96,21 +91,17 @@ if page == "Home":
         else:
             st.warning("Enter a proverb to translate.")
 
-# ========== Proverb of the Day Page ==========
-
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the day")
-
     try:
-        with open("data/proverbs.txt", "r", encoding="utf-8") as f:
-            all_proverbs = [line.strip() for line in f if line.strip()]
-    except FileNotFoundError:
+        data = core.load_all_proverbs()
+        all_proverbs = [item["proverb"] for item in data]
+    except:
         all_proverbs = []
 
     if all_proverbs:
         selected_proverb = random.choice(all_proverbs)
-        display_lang = "English"
-        translated = translate.translate_text(selected_proverb, display_lang)
+        translated = translate.translate_text(selected_proverb, "English")
 
         st.markdown(f"""
             <div style='
@@ -132,12 +123,9 @@ elif page == "Proverb of the day":
     else:
         st.warning("No proverbs available in the file yet.")
 
-    st.markdown("<div style='margin-top: 25px; text-align: center;'>", unsafe_allow_html=True)
     if st.button("🔄 Next Proverb"):
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
 
-# Page: States
 elif page == "States":
     st.markdown("<h3 style='color: black;'>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
     stats = core.load_stats()
