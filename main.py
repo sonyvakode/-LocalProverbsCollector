@@ -81,7 +81,7 @@ if page == "Home":
                 st.write("Transcribed:", proverb_from_audio)
                 proverb = proverb or proverb_from_audio
             if proverb and city != "Select":
-                core.save_proverb(proverb, city, lang)  # ✅ FIXED: removed unsupported keyword argument
+                core.save_proverb(proverb, city, lang, meaning=meaning)  # ✅ Restored meaning
                 st.success("✅ Proverb saved successfully!")
             else:
                 st.error("❌ Please provide both proverb and city/region.")
