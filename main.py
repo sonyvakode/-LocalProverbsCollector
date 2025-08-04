@@ -67,6 +67,7 @@ if page == "Home":
 
     with st.form("submit_form"):
         proverb = st.text_area("Enter a local proverb")
+        meaning = st.text_area("Write the meaning of the proverb")  # ✅ Added
         city = st.text_input("City or Region")
         lang = st.selectbox("Language of the proverb", language.get_all_languages(), key="lang_submit")
         audio_file = st.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"])
@@ -77,7 +78,7 @@ if page == "Home":
                 st.write("Transcribed:", proverb_from_audio)
                 proverb = proverb or proverb_from_audio
             if proverb and city:
-                core.save_proverb(proverb, city, lang)
+                core.save_proverb(proverb, city, lang, meaning=meaning)  # ✅ Updated to pass `meaning`
                 st.success("✅ Proverb saved successfully!")
             else:
                 st.error("❌ Please provide both proverb and city/region.")
