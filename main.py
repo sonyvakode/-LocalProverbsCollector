@@ -58,7 +58,7 @@ st.markdown(
 )
 
 # Sidebar Navigation
-page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Stats"])
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])  # ✅ changed from Stats to States
 
 # Page: Home
 if page == "Home":
@@ -67,8 +67,11 @@ if page == "Home":
 
     with st.form("submit_form"):
         proverb = st.text_area("Enter a local proverb")
-        meaning = st.text_area("Write the meaning of the proverb")  # ✅ Added
-        city = st.text_input("City or Region")
+        meaning = st.text_area("Write the meaning of the proverb")  # already added previously
+        city = st.selectbox(  # ✅ changed to selectbox
+            "Name of the City or Region", 
+            ["Select", "Hyderabad", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Delhi", "Other"]
+        )
         lang = st.selectbox("Language of the proverb", language.get_all_languages(), key="lang_submit")
         audio_file = st.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"])
         submitted = st.form_submit_button("Submit")
@@ -77,8 +80,8 @@ if page == "Home":
                 proverb_from_audio = audio.transcribe_audio(audio_file)
                 st.write("Transcribed:", proverb_from_audio)
                 proverb = proverb or proverb_from_audio
-            if proverb and city:
-                core.save_proverb(proverb, city, lang, meaning=meaning)  # ✅ Updated to pass `meaning`
+            if proverb and city != "Select":
+                core.save_proverb(proverb, city, lang, meaning=meaning)
                 st.success("✅ Proverb saved successfully!")
             else:
                 st.error("❌ Please provide both proverb and city/region.")
@@ -134,8 +137,8 @@ elif page == "Proverb of the day":
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Page: Stats
-elif page == "Stats":
+# Page: States
+elif page == "States":  # ✅ updated label
     st.markdown("<h3 style='color: black;'>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
