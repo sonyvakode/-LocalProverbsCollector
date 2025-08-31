@@ -17,7 +17,7 @@ if "user_identifier" not in st.session_state:
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
-# ✅ Centralized API base URL (pointing at your deployed API)
+# ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
 # ========== Background ==========
@@ -77,17 +77,15 @@ if not st.session_state.authenticated:
             if not st.session_state.otp_sent:
                 if st.button("Send OTP"):
                     try:
-                        # NOTE: Backend expects "phone_number"
                         response = requests.post(
                             f"{API_BASE_URL}/login/send-otp",
-                            json={"phone_number": user_input}
+                            json={"phone_number": user_input}   # ✅ fixed key
                         )
                         if response.status_code == 200:
                             st.session_state.otp_sent = True
                             st.session_state.user_identifier = user_input
                             st.success("✅ OTP sent successfully!")
                         else:
-                            # show backend error JSON if available
                             try:
                                 st.error(f"❌ Failed: {response.json()}")
                             except Exception:
@@ -98,13 +96,11 @@ if not st.session_state.authenticated:
                 otp = st.text_input("Enter OTP", type="password")
                 if st.button("Verify OTP"):
                     try:
-                        # NOTE: backend expects phone_number + otp
                         response = requests.post(
                             f"{API_BASE_URL}/login/verify-otp",
-                            json={"phone_number": st.session_state.user_identifier, "otp": otp}
+                            json={"phone_number": st.session_state.user_identifier, "otp_code": otp}  # ✅ fixed key
                         )
                         if response.status_code == 200:
-                            # backend may return {"verified": True} or a token — check both
                             json_resp = {}
                             try:
                                 json_resp = response.json()
@@ -139,10 +135,9 @@ if not st.session_state.authenticated:
             password = st.text_input("🔑 Password", type="password")
             if st.button("Register"):
                 try:
-                    # use phone_number key for signup as well
                     response = requests.post(
-                        f"{API_BASE_URL}/sign-up_send-otp",
-                        json={"phone_number": phone, "password": password}
+                        f"{API_BASE_URL}/signup/send-otp",   # ✅ fixed endpoint name
+                        json={"phone_number": phone, "password": password}  # ✅ fixed key
                     )
                     if response.status_code == 200:
                         st.success("✅ Sign-up successful! Verify OTP sent.")
@@ -164,7 +159,7 @@ if not st.session_state.authenticated:
                 try:
                     response = requests.post(
                         f"{API_BASE_URL}/reset-password",
-                        json={"phone_number": phone, "new_password": new_pass}
+                        json={"phone_number": phone, "new_password": new_pass}  # ✅ fixed key
                     )
                     if response.status_code == 200:
                         st.success("✅ Password reset successfully!")
