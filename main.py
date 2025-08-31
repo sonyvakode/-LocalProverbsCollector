@@ -36,74 +36,66 @@ def set_background(image_file):
             font-family: 'Segoe UI', sans-serif;
         }}
         .card {{
-            background-color: #1a1a2e;
-            padding: 3rem 2rem;
+            background-color: #fff;
+            padding: 2rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin: auto;
-            max-width: 500px;
+            max-width: 420px;
+        }}
+        h2 {{
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #333;
+        }}
+        .auth-methods {{
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }}
+        .method-btn {{
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            font-weight: 500;
+        }}
+        .method-btn.active {{
+            border-color: #0073e6;
+            background: #0073e6;
             color: white;
         }}
-        .auth-tabs {{
-            display: flex;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid #333;
-        }}
-        .auth-tab {{
-            padding: 1rem 2rem;
-            cursor: pointer;
-            color: #999;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }}
-        .auth-tab.active {{
-            color: #ff6b6b;
-            border-bottom-color: #ff6b6b;
-        }}
-        .login-methods {{
-            margin-bottom: 2rem;
-        }}
-        .method-title {{
-            color: #ccc;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }}
-        .method-options {{
-            display: flex;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }}
-        .method-option {{
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #ccc;
-        }}
-        .method-option input[type="radio"] {{
-            accent-color: #ff6b6b;
-        }}
         .stTextInput > div > div > input {{
-            background-color: #2d2d44 !important;
-            border: 1px solid #444 !important;
-            color: white !important;
             border-radius: 8px !important;
-            padding: 1rem !important;
-        }}
-        .stTextInput > div > div > input::placeholder {{
-            color: #888 !important;
-        }}
-        .stTextInput > label {{
-            color: #ccc !important;
-            font-weight: 500 !important;
+            border: 1px solid #ddd !important;
+            padding: 0.75rem !important;
         }}
         .stButton > button {{
-            background-color: #ff6b6b !important;
+            background-color: #0073e6 !important;
             color: white !important;
             border: none !important;
             border-radius: 8px !important;
             padding: 0.75rem 2rem !important;
             font-weight: 600 !important;
             width: 100% !important;
+        }}
+        @media (max-width: 768px) {{
+            .card {{
+                max-width: 95%;
+                padding: 1.5rem;
+            }}
+            .auth-methods {{
+                flex-direction: column;
+                gap: 0.5rem;
+            }}
+            .method-btn {{
+                width: 100%;
+                text-align: center;
+            }}
         }}
         .switch-links {{
             text-align: center;
@@ -356,7 +348,24 @@ elif page == "States":
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
     sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
+    
     if sorted_regions:
+        # Show as graph
+        import matplotlib.pyplot as plt
+        regions = [item[0] for item in sorted_regions[:10]]
+        counts = [item[1] for item in sorted_regions[:10]]
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        bars = ax.bar(regions, counts, color='#0073e6')
+        ax.set_xlabel('Regions')
+        ax.set_ylabel('Number of Proverbs')
+        ax.set_title('Top 10 Regions by Proverb Count')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        st.pyplot(fig)
+        
+        # Also show as list
+        st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
     else:
