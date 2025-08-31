@@ -83,7 +83,7 @@ if not st.session_state.authenticated:
                         try:
                             response = requests.post(
                                 f"{API_BASE_URL}/login/send-otp",
-                                json={"phone_number": user_input}   # ✅ correct key
+                                json={"phone_number": user_input}
                             )
                             if response.status_code == 200:
                                 st.session_state.otp_sent = True
@@ -107,7 +107,7 @@ if not st.session_state.authenticated:
                                 f"{API_BASE_URL}/login/verify-otp",
                                 json={
                                     "phone_number": st.session_state.user_identifier,
-                                    "otp_code": otp   # ✅ match backend expected key
+                                    "otp_code": otp
                                 }
                             )
                             if response.status_code == 200:
@@ -116,7 +116,7 @@ if not st.session_state.authenticated:
                                     json_resp = response.json()
                                 except Exception:
                                     pass
-                                verified = json_resp.get("verified", True)  # assume success if 200
+                                verified = json_resp.get("verified", True)
                                 if verified:
                                     st.session_state.authenticated = True
                                     st.success("🎉 Login successful!")
@@ -147,7 +147,7 @@ if not st.session_state.authenticated:
                 try:
                     response = requests.post(
                         f"{API_BASE_URL}/signup/send-otp",
-                        json={"phone_number": phone, "password": password}  # ✅ correct keys
+                        json={"phone_number": phone, "password": password}
                     )
                     if response.status_code == 200:
                         st.success("✅ Sign-up successful! Verify OTP sent.")
@@ -169,7 +169,7 @@ if not st.session_state.authenticated:
                 try:
                     response = requests.post(
                         f"{API_BASE_URL}/reset-password",
-                        json={"phone_number": phone, "new_password": new_pass}  # ✅ correct keys
+                        json={"phone_number": phone, "new_password": new_pass}
                     )
                     if response.status_code == 200:
                         st.success("✅ Password reset successfully!")
@@ -217,6 +217,16 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
+
+                # --- NEW: Show translation after submission ---
+                try:
+                    translated = translate.translate_text(proverb, "English")
+                    st.markdown(f"<div style='text-align: center; margin-top: 15px;'>"
+                                f"<b>Original:</b> {proverb}<br>"
+                                f"<b>Translated:</b> {translated}"
+                                f"</div>", unsafe_allow_html=True)
+                except Exception as e:
+                    st.warning(f"⚠️ Translation failed: {e}")
             else:
                 st.error("❌ Provide both proverb and city.")
 
@@ -231,7 +241,15 @@ elif page == "Proverb of the day":
     if all_proverbs:
         selected = random.choice(all_proverbs)
         translated = translate.translate_text(selected, "English")
-        st.info(f"✨ Original: {selected}\n\n➡️ Translated: {translated}")
+        st.markdown(
+            f"""
+            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: #000;'>
+                <p><b>✨ Original:</b> {selected}</p>
+                <p><b>➡️ Translated:</b> {translated}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     else:
         st.warning("No proverbs available.")
     if st.button("🔄 Next Proverb"):
