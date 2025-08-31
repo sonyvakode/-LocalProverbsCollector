@@ -17,7 +17,7 @@ if "otp_sent" not in st.session_state:
 if "user_identifier" not in st.session_state:
     st.session_state.user_identifier = ""
 if "auth_mode" not in st.session_state:
-    st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
+    st.session_state.auth_mode = "login"  # login | signup | reset_password | change_password
 
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
@@ -39,11 +39,20 @@ def set_background(image_file):
         h1, h2, p {{
             color: black !important;
         }}
+        .login-card {{
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 20px;
+            border-radius: 15px;
+            max-width: 420px;
+            margin: 50px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }}
         .stTextInput > div > div > input {{
             border-radius: 8px !important;
             border: 1px solid #ddd !important;
             padding: 0.75rem !important;
             color: black !important;
+            width: 100% !important;
         }}
         .stButton > button {{
             background-color: #555 !important;
@@ -55,12 +64,17 @@ def set_background(image_file):
             width: 100% !important;
         }}
         @media (max-width: 768px) {{
+            .login-card {{
+                margin: 30px auto;
+                padding: 20px 15px;
+                max-width: 95%;
+            }}
             .stTextInput > div > div > input {{
                 font-size: 16px !important;
             }}
             .stButton > button {{
                 font-size: 16px !important;
-                padding: 1rem !important;
+                padding: 0.9rem !important;
             }}
         }}
         </style>
@@ -72,14 +86,14 @@ set_background("Background.jpg")
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-    # Centered welcome text
-    st.markdown(
-        "<h1 style='text-align:center; font-size:36px; margin-top:150px;'>Welcome Back!</h1>",
-        unsafe_allow_html=True
-    )
+    # Centered login card
+    st.markdown("<div class='login-card'>", unsafe_allow_html=True)
+
+    # Welcome text
+    st.markdown("<h2 style='text-align:center; margin-bottom:20px;'>Welcome Back!</h2>", unsafe_allow_html=True)
 
     user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
-    
+
     if not st.session_state.otp_sent:
         if st.button("Send OTP", key="send_otp_btn"):
             if not user_input.isdigit() or len(user_input) != 10:
@@ -105,7 +119,7 @@ if not st.session_state.authenticated:
     else:
         st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
         otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6)
-        
+
         col1, col2 = st.columns([3, 1])
         with col1:
             if st.button("Verify & Sign In", key="verify_otp_btn"):
@@ -140,13 +154,14 @@ if not st.session_state.authenticated:
                                 st.error(f"❌ Failed: {response.text}")
                     except requests.exceptions.RequestException as e:
                         st.error(f"Error connecting to backend: {e}")
-        
+
         with col2:
             if st.button("↩️", key="back_btn", help="Go back"):
                 st.session_state.otp_sent = False
                 st.session_state.user_identifier = ""
                 st.rerun()
 
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ========== MAIN APP ==========
@@ -158,7 +173,7 @@ st.markdown(
 # ✅ Sidebar Navigation
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
 
-# Page: Home
+# ====== Home Page ======
 if page == "Home":
     st.subheader("Submit Your Proverb")
     with st.form("submit_form"):
@@ -196,7 +211,7 @@ if page == "Home":
         else:
             st.warning("Please enter a proverb to translate.")
 
-# Page: Proverb of the Day
+# ====== Proverb of the Day ======
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the Day")
     try:
@@ -221,7 +236,7 @@ elif page == "Proverb of the day":
     if st.button("🔄 Next Proverb"):
         st.rerun()
 
-# Page: States
+# ====== States Page ======
 elif page == "States":
     st.subheader("📊 Proverbs Stats")
     stats = core.load_stats()
@@ -247,7 +262,6 @@ elif page == "States":
         plt.tight_layout()
         st.pyplot(fig)
         
-        # Also show as list
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
