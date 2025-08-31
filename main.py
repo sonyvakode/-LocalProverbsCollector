@@ -87,6 +87,7 @@ def set_background(image_file):
             .card {{
                 max-width: 95%;
                 padding: 1.5rem;
+                margin: 1rem auto;
             }}
             .auth-methods {{
                 flex-direction: column;
@@ -95,6 +96,13 @@ def set_background(image_file):
             .method-btn {{
                 width: 100%;
                 text-align: center;
+            }}
+            .stTextInput > div > div > input {{
+                font-size: 16px !important;
+            }}
+            .stButton > button {{
+                font-size: 16px !important;
+                padding: 1rem !important;
             }}
         }}
         .switch-links {{
@@ -106,6 +114,7 @@ def set_background(image_file):
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
+            margin: 0 10px;
         }}
         </style>
         """,
