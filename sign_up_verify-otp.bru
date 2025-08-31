@@ -5,9 +5,20 @@ meta {
 }
 
 post {
-  url: /api/v1/auth/signup/verify-otp
-  body: none
+  url: https://api.corpus.swecha.org/api/v1/auth/signup/verify-otp
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "phone_number": "string",
+    "otp_code": "string",
+    "name": "string",
+    "email": "user@example.com",
+    "password": "stringst",
+    "has_given_consent": true
+  }
 }
 
 settings {
