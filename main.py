@@ -1,27 +1,60 @@
 import streamlit as st
 import random
 import base64
+import requests
 from utils import core, translate, vote, audio, language
 
 # Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# ========== 🔒 Authentication First ==========
+# ========== 🔒 Authentication with OTP ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+if "otp_sent" not in st.session_state:
+    st.session_state.otp_sent = False
+if "user_identifier" not in st.session_state:
+    st.session_state.user_identifier = ""
 
 if not st.session_state.authenticated:
-    st.title("🔒 Sign In Required")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        # Simple static login (replace with OTP/DB as needed)
-        if username == "admin" and password == "1234":
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.error("Invalid credentials. Try again.")
-    st.stop()   # Prevent rest of the app from running
+    st.title("🔒 Sign In with OTP")
+
+    if not st.session_state.otp_sent:
+        user_input = st.text_input("Enter your Email or Phone")
+        if st.button("Send OTP"):
+            try:
+                # ✅ Call your backend OTP API (update URL as per your server)
+                response = requests.post(
+                    "http://localhost:8000/send-otp",  # change to your send-otp API endpoint
+                    json={"user": user_input}
+                )
+                if response.status_code == 200:
+                    st.session_state.otp_sent = True
+                    st.session_state.user_identifier = user_input
+                    st.success("✅ OTP sent successfully!")
+                else:
+                    st.error("❌ Failed to send OTP. Try again.")
+            except Exception as e:
+                st.error(f"Error sending OTP: {e}")
+
+    else:
+        otp = st.text_input("Enter OTP", type="password")
+        if st.button("Verify OTP"):
+            try:
+                # ✅ Verify OTP API (update URL as per your server)
+                response = requests.post(
+                    "http://localhost:8000/verify-otp",  # change to your verify-otp API endpoint
+                    json={"user": st.session_state.user_identifier, "otp": otp}
+                )
+                if response.status_code == 200 and response.json().get("verified"):
+                    st.session_state.authenticated = True
+                    st.success("🎉 Login successful!")
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid OTP. Try again.")
+            except Exception as e:
+                st.error(f"Error verifying OTP: {e}")
+
+    st.stop()  # Prevent app from loading if not authenticated
 
 # ========== Background ==========
 def set_background(image_file):
