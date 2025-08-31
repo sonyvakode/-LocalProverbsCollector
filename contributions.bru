@@ -1,0 +1,131 @@
+meta {
+  name: contributions
+  type: http
+  seq: 10
+}
+
+get {
+  url: https://api.corpus.swecha.org/api/v1/users/{user_id}/contributions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "total_contributions": 0,
+    "contributions_by_media_type": {
+      "text": 0,
+      "audio": 0,
+      "image": 0,
+      "video": 0,
+      "document": 0
+    },
+    "audio_contributions": [
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "size": 0,
+        "category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "reviewed": true,
+        "title": "string",
+        "description": "string",
+        "duration": 0,
+        "timestamp": "2025-08-31T14:00:02.997Z",
+        "location": {
+          "latitude": 17.385,
+          "longitude": 78.4867
+        },
+        "release_rights": "creator",
+        "language": "assamese",
+        "file_hash": "string",
+        "snr_frequency": 0
+      }
+    ],
+    "video_contributions": [
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "size": 0,
+        "category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "reviewed": true,
+        "title": "string",
+        "description": "string",
+        "duration": 0,
+        "timestamp": "2025-08-31T14:00:02.997Z",
+        "location": {
+          "latitude": 17.385,
+          "longitude": 78.4867
+        },
+        "release_rights": "creator",
+        "language": "assamese",
+        "file_hash": "string",
+        "snr_frequency": 0
+      }
+    ],
+    "text_contributions": [
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "size": 0,
+        "category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "reviewed": true,
+        "title": "string",
+        "description": "string",
+        "duration": 0,
+        "timestamp": "2025-08-31T14:00:02.997Z",
+        "location": {
+          "latitude": 17.385,
+          "longitude": 78.4867
+        },
+        "release_rights": "creator",
+        "language": "assamese",
+        "file_hash": "string",
+        "snr_frequency": 0
+      }
+    ],
+    "image_contributions": [
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "size": 0,
+        "category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "reviewed": true,
+        "title": "string",
+        "description": "string",
+        "duration": 0,
+        "timestamp": "2025-08-31T14:00:02.997Z",
+        "location": {
+          "latitude": 17.385,
+          "longitude": 78.4867
+        },
+        "release_rights": "creator",
+        "language": "assamese",
+        "file_hash": "string",
+        "snr_frequency": 0
+      }
+    ],
+    "document_contributions": [
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "size": 0,
+        "category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "reviewed": true,
+        "title": "string",
+        "description": "string",
+        "duration": 0,
+        "timestamp": "2025-08-31T14:00:02.998Z",
+        "location": {
+          "latitude": 17.385,
+          "longitude": 78.4867
+        },
+        "release_rights": "creator",
+        "language": "assamese",
+        "file_hash": "string",
+        "snr_frequency": 0
+      }
+    ],
+    "audio_duration": 0,
+    "video_duration": 0
+  }
+}
+
+settings {
+  encodeUrl: true
+}

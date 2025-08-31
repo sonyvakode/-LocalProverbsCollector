@@ -1,0 +1,21 @@
+meta {
+  name: chunk
+  type: http
+  seq: 9
+}
+
+post {
+  url: https://api.corpus.swecha.org/api/v1/records/upload/chunk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "additionalProp1": {}
+  }
+}
+
+settings {
+  encodeUrl: true
+}
