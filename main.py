@@ -79,7 +79,7 @@ if not st.session_state.authenticated:
                     try:
                         response = requests.post(
                             f"{API_BASE_URL}/login/send-otp",
-                            json={"phone_number": user_input}   # ✅ fixed key
+                            json={"phone_number": user_input}   # ✅ correct key
                         )
                         if response.status_code == 200:
                             st.session_state.otp_sent = True
@@ -98,7 +98,10 @@ if not st.session_state.authenticated:
                     try:
                         response = requests.post(
                             f"{API_BASE_URL}/login/verify-otp",
-                            json={"phone_number": st.session_state.user_identifier, "otp_code": otp}  # ✅ fixed key
+                            json={
+                                "phone_number": st.session_state.user_identifier,
+                                "otp_code": otp
+                            }  # ✅ correct keys
                         )
                         if response.status_code == 200:
                             json_resp = {}
@@ -136,8 +139,8 @@ if not st.session_state.authenticated:
             if st.button("Register"):
                 try:
                     response = requests.post(
-                        f"{API_BASE_URL}/signup/send-otp",   # ✅ fixed endpoint name
-                        json={"phone_number": phone, "password": password}  # ✅ fixed key
+                        f"{API_BASE_URL}/signup/send-otp",
+                        json={"phone_number": phone, "password": password}  # ✅ correct keys
                     )
                     if response.status_code == 200:
                         st.success("✅ Sign-up successful! Verify OTP sent.")
@@ -159,7 +162,7 @@ if not st.session_state.authenticated:
                 try:
                     response = requests.post(
                         f"{API_BASE_URL}/reset-password",
-                        json={"phone_number": phone, "new_password": new_pass}  # ✅ fixed key
+                        json={"phone_number": phone, "new_password": new_pass}  # ✅ correct keys
                     )
                     if response.status_code == 200:
                         st.success("✅ Password reset successfully!")
