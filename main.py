@@ -10,6 +10,7 @@ st.set_page_config(page_title="Indian Wisdom", layout="centered")
 # ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+
 if "otp_sent" not in st.session_state:
     st.session_state.otp_sent = False
 if "user_identifier" not in st.session_state:
@@ -99,15 +100,15 @@ if not st.session_state.authenticated:
                 otp = st.text_input("Enter OTP", type="password", max_chars=6)
                 if st.button("Verify OTP"):
                     if not otp or len(otp) < 4:
-                        st.error("⚠️ Please enter the 4-digit OTP you received.")
+                        st.error("⚠️ Please enter the 6-digit OTP you received.")
                     else:
                         try:
                             response = requests.post(
                                 f"{API_BASE_URL}/login/verify-otp",
                                 json={
                                     "phone_number": st.session_state.user_identifier,
-                                    "otp_code": otp
-                                }  # ✅ correct keys
+                                    "otp_code": otp   # ✅ match backend expected key
+                                }
                             )
                             if response.status_code == 200:
                                 json_resp = {}
