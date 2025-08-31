@@ -5,9 +5,27 @@ meta {
 }
 
 get {
-  url: /api/v1/auth/me
-  body: none
+  url: https://api.corpus.swecha.org/api/v1/auth/me
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "phone": "string",
+    "name": "string",
+    "email": "user@example.com",
+    "gender": "string",
+    "date_of_birth": "2025-08-31",
+    "place": "string",
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "is_active": true,
+    "has_given_consent": true,
+    "consent_given_at": "2025-08-31T12:07:27.213Z",
+    "last_login_at": "2025-08-31T12:07:27.213Z",
+    "created_at": "2025-08-31T12:07:27.213Z",
+    "updated_at": "2025-08-31T12:07:27.213Z"
+  }
 }
 
 settings {
