@@ -289,46 +289,68 @@ elif page == "States":
     else:
         st.info("No data yet.")
 
+# ====== Auto-fix CONTRIBUTORS.md & auto-create if missing ======
+def sanitize_contributors_file(file_path="CONTRIBUTORS.md"):
+    if not os.path.exists(file_path):
+        # Automatically create empty file
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write("")
+        st.info("CONTRIBUTORS.md not found. A new file has been created.")
+    
+    updated_lines = []
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            lines = [line.strip() for line in f if line.strip()]
+        
+        for line in lines:
+            if '-' in line:
+                name, contribution = map(str.strip, line.split('-', 1))
+            else:
+                name = line
+                contribution = "General Contribution"
+            updated_lines.append(f"{name} - {contribution}")
+
+        # Rewrite sanitized file
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(updated_lines))
+        return updated_lines
+    except Exception as e:
+        st.error(f"Error reading/writing CONTRIBUTORS.md: {e}")
+        return []
+
+contributors_list = sanitize_contributors_file()
+
 # Page: Contributors
 elif page == "Contributors":
     st.subheader("👥 Contributors")
-    try:
-        with open("CONTRIBUTORS.md", "r", encoding="utf-8") as f:
-            lines = [line.strip() for line in f if line.strip()]
-        
-        if not lines:
-            st.warning("No contributors found in CONTRIBUTORS.md.")
-        else:
-            # Count contributors
-            st.info(f"Total Contributors: {len(lines)}")
-            
-            # Display contributor list and their contributions
-            for i, line in enumerate(lines, start=1):
-                if '-' in line:
-                    name, contribution = map(str.strip, line.split('-', 1))
-                    st.markdown(f"**{i}. {name}**: {contribution}")
+    lines = contributors_list
+
+    if not lines:
+        st.warning("No contributors found.")
+    else:
+        st.info(f"Total Contributors: {len(lines)}")
+        for i, line in enumerate(lines, start=1):
+            if '-' in line:
+                name, contribution = map(str.strip, line.split('-', 1))
+                st.markdown(f"**{i}. {name}**: {contribution}")
+            else:
+                st.markdown(f"**{i}. {line}**: Contribution details not specified")
+
+        if st.button("Submit Contributors to Swacha"):
+            try:
+                payload = [{"name": line.split('-')[0].strip(), 
+                            "contribution": line.split('-')[1].strip() if '-' in line else ""} 
+                           for line in lines]
+                response = requests.post(
+                    "https://api.corpus.swecha.org/api/v1/contributors", 
+                    json={"contributors": payload}
+                )
+                if response.status_code == 200:
+                    st.success("✅ Contributors submitted successfully to Swacha!")
                 else:
-                    st.markdown(f"**{i}. {line}**: Contribution details not specified")
-
-            # Submit to Swacha
-            if st.button("Submit Contributors to Swacha"):
-                try:
-                    payload = [{"name": line.split('-')[0].strip(), 
-                                "contribution": line.split('-')[1].strip() if '-' in line else ""} 
-                               for line in lines]
-                    response = requests.post(
-                        "https://api.corpus.swecha.org/api/v1/contributors", 
-                        json={"contributors": payload}
-                    )
-                    if response.status_code == 200:
-                        st.success("✅ Contributors submitted successfully to Swacha!")
-                    else:
-                        st.error(f"❌ Failed to submit: {response.text}")
-                except Exception as e:
-                    st.error(f"⚠️ Error submitting contributors: {e}")
-
-    except FileNotFoundError:
-        st.warning("No CONTRIBUTORS.md file found.")
+                    st.error(f"❌ Failed to submit: {response.text}")
+            except Exception as e:
+                st.error(f"⚠️ Error submitting contributors: {e}")
 
 # Page: Contributing Guide
 elif page == "Contributing Guide":
