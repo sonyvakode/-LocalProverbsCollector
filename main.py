@@ -238,7 +238,7 @@ elif page == "States":
         ax.set_xlabel('Regions', fontsize=12)
         ax.set_ylabel('Number of Proverbs', fontsize=12)
         ax.set_title('Top 10 Regions by Proverb Count', fontsize=14, fontweight='bold', pad=15)
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=90, ha='right')
         plt.tight_layout()
         st.pyplot(fig)
         
