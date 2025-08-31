@@ -29,150 +29,34 @@ def set_background(image_file):
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
+                        url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-position: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
         }}
-        
-        .main-container {{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }}
-        
-        .auth-card {{
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 3rem 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        .card {{
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin: auto;
-            max-width: 450px;
-            width: 100%;
-            border: 1px solid rgba(255,255,255,0.2);
+            max-width: 420px;
         }}
-        
-        .app-title {{
+        h2 {{
             text-align: center;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            color: #333;
         }}
-        
-        .app-subtitle {{
-            text-align: center;
-            color: #666;
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
-        }}
-        
-        .form-title {{
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #2d3748;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }}
-        
-        .stTextInput > div > div > input {{
-            border-radius: 12px !important;
-            border: 2px solid #e2e8f0 !important;
-            padding: 0.75rem 1rem !important;
-            font-size: 1rem !important;
-            transition: all 0.3s ease !important;
-        }}
-        
-        .stTextInput > div > div > input:focus {{
-            border-color: #667eea !important;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
-        }}
-        
-        .stButton > button {{
-            background: linear-gradient(135deg, #667eea, #764ba2) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 12px !important;
-            padding: 0.75rem 2rem !important;
-            font-size: 1rem !important;
-            font-weight: 600 !important;
-            width: 100% !important;
-            transition: all 0.3s ease !important;
-        }}
-        
-        .stButton > button:hover {{
-            transform: translateY(-2px) !important;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3) !important;
-        }}
-        
         .switch-links {{
             text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
+            margin-top: 1rem;
         }}
-        
         .switch-links a {{
-            color: #667eea;
+            color: #0073e6;
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
-            margin: 0 10px;
-            transition: color 0.3s ease;
-        }}
-        
-        .switch-links a:hover {{
-            color: #764ba2;
-        }}
-        
-        .success-message {{
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            text-align: center;
-            margin: 1rem 0;
-        }}
-        
-        .error-message {{
-            background: linear-gradient(135deg, #f56565, #e53e3e);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            text-align: center;
-            margin: 1rem 0;
-        }}
-        
-        .input-label {{
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }}
-        
-        /* Hide default streamlit styling */
-        .stTextInput > label {{
-            font-weight: 600 !important;
-            color: #2d3748 !important;
-            font-size: 0.95rem !important;
-        }}
-        
-        /* Responsive design */
-        @media (max-width: 768px) {{
-            .auth-card {{
-                padding: 2rem 1.5rem;
-                margin: 1rem;
-            }}
-            .app-title {{
-                font-size: 1.75rem;
-            }}
         }}
         </style>
         """,
@@ -184,12 +68,8 @@ set_background("Background.jpg")
 # ========== Authentication ==========
 if not st.session_state.authenticated:
 
-    st.markdown("<div class='main-container'>", unsafe_allow_html=True)
-    st.markdown("<div class='auth-card'>", unsafe_allow_html=True)
-    
-    # App branding
-    st.markdown("<div class='app-title'>📜 Indian Wisdom</div>", unsafe_allow_html=True)
-    st.markdown("<div class='app-subtitle'>Preserving Local Proverbs & Cultural Heritage</div>", unsafe_allow_html=True)
+    with st.container():
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
 
     if st.session_state.auth_mode == "login":
         st.markdown("<div class='form-title'>Welcome Back!</div>", unsafe_allow_html=True)
@@ -329,8 +209,7 @@ if not st.session_state.authenticated:
             unsafe_allow_html=True,
         )
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ========== MAIN APP ==========
