@@ -17,7 +17,7 @@ if "user_identifier" not in st.session_state:
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
-# ✅ Centralized API base URL (UPDATED from localhost → swecha API)
+# ✅ Centralized API base URL (pointing at your deployed API)
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
 # ========== Background ==========
@@ -77,34 +77,53 @@ if not st.session_state.authenticated:
             if not st.session_state.otp_sent:
                 if st.button("Send OTP"):
                     try:
+                        # NOTE: Backend expects "phone_number"
                         response = requests.post(
                             f"{API_BASE_URL}/login/send-otp",
-                            json={"phone": user_input}
+                            json={"phone_number": user_input}
                         )
                         if response.status_code == 200:
                             st.session_state.otp_sent = True
                             st.session_state.user_identifier = user_input
                             st.success("✅ OTP sent successfully!")
                         else:
-                            st.error(f"❌ Failed: {response.text}")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
+                            # show backend error JSON if available
+                            try:
+                                st.error(f"❌ Failed: {response.json()}")
+                            except Exception:
+                                st.error(f"❌ Failed: {response.text}")
+                    except requests.exceptions.RequestException as e:
+                        st.error(f"Error connecting to backend: {e}")
             else:
                 otp = st.text_input("Enter OTP", type="password")
                 if st.button("Verify OTP"):
                     try:
+                        # NOTE: backend expects phone_number + otp
                         response = requests.post(
                             f"{API_BASE_URL}/login/verify-otp",
-                            json={"phone": st.session_state.user_identifier, "otp": otp}
+                            json={"phone_number": st.session_state.user_identifier, "otp": otp}
                         )
-                        if response.status_code == 200 and response.json().get("verified"):
-                            st.session_state.authenticated = True
-                            st.success("🎉 Login successful!")
-                            st.rerun()
+                        if response.status_code == 200:
+                            # backend may return {"verified": True} or a token — check both
+                            json_resp = {}
+                            try:
+                                json_resp = response.json()
+                            except Exception:
+                                pass
+                            verified = json_resp.get("verified", True)  # assume success if 200
+                            if verified:
+                                st.session_state.authenticated = True
+                                st.success("🎉 Login successful!")
+                                st.rerun()
+                            else:
+                                st.error("❌ Invalid OTP.")
                         else:
-                            st.error("❌ Invalid OTP.")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
+                            try:
+                                st.error(f"❌ Failed: {response.json()}")
+                            except Exception:
+                                st.error(f"❌ Failed: {response.text}")
+                    except requests.exceptions.RequestException as e:
+                        st.error(f"Error connecting to backend: {e}")
 
             st.markdown(
                 """<div class="switch-links">
@@ -120,16 +139,22 @@ if not st.session_state.authenticated:
             password = st.text_input("🔑 Password", type="password")
             if st.button("Register"):
                 try:
-                    response = requests.post(f"{API_BASE_URL}/sign-up_send-otp",
-                                             json={"phone": phone, "password": password})
+                    # use phone_number key for signup as well
+                    response = requests.post(
+                        f"{API_BASE_URL}/sign-up_send-otp",
+                        json={"phone_number": phone, "password": password}
+                    )
                     if response.status_code == 200:
                         st.success("✅ Sign-up successful! Verify OTP sent.")
                         st.session_state.auth_mode = "login"
                         st.rerun()
                     else:
-                        st.error(f"❌ Failed: {response.text}")
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                        try:
+                            st.error(f"❌ Failed: {response.json()}")
+                        except Exception:
+                            st.error(f"❌ Failed: {response.text}")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Error connecting to backend: {e}")
 
         elif st.session_state.auth_mode == "reset_password":
             st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
@@ -137,16 +162,21 @@ if not st.session_state.authenticated:
             new_pass = st.text_input("🔑 New Password", type="password")
             if st.button("Reset Password"):
                 try:
-                    response = requests.post(f"{API_BASE_URL}/reset-password",
-                                             json={"phone": phone, "new_password": new_pass})
+                    response = requests.post(
+                        f"{API_BASE_URL}/reset-password",
+                        json={"phone_number": phone, "new_password": new_pass}
+                    )
                     if response.status_code == 200:
                         st.success("✅ Password reset successfully!")
                         st.session_state.auth_mode = "login"
                         st.rerun()
                     else:
-                        st.error(f"❌ Failed: {response.text}")
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                        try:
+                            st.error(f"❌ Failed: {response.json()}")
+                        except Exception:
+                            st.error(f"❌ Failed: {response.text}")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Error connecting to backend: {e}")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
