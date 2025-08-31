@@ -193,7 +193,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
+# ✅ Added "Translate" to navigation
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Translate", "States"])
 
 # Page: Home
 if page == "Home":
@@ -218,7 +219,7 @@ if page == "Home":
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
 
-                # --- NEW: Show translation after submission ---
+                # --- Show translation after submission ---
                 try:
                     translated = translate.translate_text(proverb, "English")
                     st.markdown(f"<div style='text-align: center; margin-top: 15px;'>"
@@ -254,6 +255,21 @@ elif page == "Proverb of the day":
         st.warning("No proverbs available.")
     if st.button("🔄 Next Proverb"):
         st.rerun()
+
+# ✅ New Page: Translate
+elif page == "Translate":
+    st.subheader("🌍 Translate a Proverb")
+    proverb_to_translate = st.text_input("Enter proverb to translate")
+    target_lang = st.selectbox("Choose target language", language.get_all_languages())
+    if st.button("Translate"):
+        if proverb_to_translate.strip():
+            try:
+                translated = translate.translate_text(proverb_to_translate, target_lang)
+                st.success(f"Translated: {translated}")
+            except Exception as e:
+                st.error(f"⚠️ Translation failed: {e}")
+        else:
+            st.warning("Please enter a proverb to translate.")
 
 # Page: States
 elif page == "States":
