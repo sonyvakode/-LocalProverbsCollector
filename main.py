@@ -28,93 +28,36 @@ def set_background(image_file):
     st.markdown(
         f"""
         <style>
+        html, body, [class*="css"] {{
+            color: #111 !important;
+        }}
         .stApp {{
-            background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
+            background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)),
                         url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-position: center;
-            font-family: 'Segoe UI', sans-serif;
         }}
-        .card {{
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin: auto;
-            max-width: 420px;
+        textarea, input, select {{
+            background-color: white !important;
+            color: #000 !important;
+            border: 1px solid #ccc !important;
+            border-radius: 5px !important;
         }}
-        h2 {{
-            text-align: center;
-            margin-bottom: 1rem;
-            color: #333;
+        label, .stSelectbox > div, .stTextInput > div, .stTextArea > div {{
+            color: #111 !important;
+            font-weight: 500 !important;
         }}
-        .auth-methods {{
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            justify-content: center;
-        }}
-        .method-btn {{
-            padding: 0.75rem 1.5rem;
-            border: 2px solid #e2e8f0;
+        .solid-box {{
+            background-color: #ffffffcc;
+            padding: 1rem;
             border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #666;
-            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
         }}
-        .method-btn.active {{
-            border-color: #0073e6;
-            background: #0073e6;
-            color: white;
-        }}
-        .stTextInput > div > div > input {{
-            border-radius: 8px !important;
-            border: 1px solid #ddd !important;
-            padding: 0.75rem !important;
-        }}
-        .stButton > button {{
-            background-color: #0073e6 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 8px !important;
-            padding: 0.75rem 2rem !important;
-            font-weight: 600 !important;
-            width: 100% !important;
-        }}
-        @media (max-width: 768px) {{
-            .card {{
-                max-width: 95%;
-                padding: 1.5rem;
-                margin: 1rem auto;
-            }}
-            .auth-methods {{
-                flex-direction: column;
-                gap: 0.5rem;
-            }}
-            .method-btn {{
-                width: 100%;
-                text-align: center;
-            }}
-            .stTextInput > div > div > input {{
-                font-size: 16px !important;
-            }}
-            .stButton > button {{
-                font-size: 16px !important;
-                padding: 1rem !important;
-            }}
-        }}
-        .switch-links {{
-            text-align: center;
-            margin-top: 1rem;
-        }}
-        .switch-links a {{
-            color: #0073e6;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-            margin: 0 10px;
+        .center {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }}
         </style>
         """,
@@ -169,10 +112,10 @@ if not st.session_state.authenticated:
                         try:
                             response = requests.post(
                                 f"{API_BASE_URL}/login/verify-otp",
-                                json={
+                                json={{
                                     "phone_number": st.session_state.user_identifier,
                                     "otp_code": otp
-                                }
+                                }}
                             )
                             if response.status_code == 200:
                                 json_resp = {}
@@ -301,8 +244,6 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
-
-         
 
     # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
