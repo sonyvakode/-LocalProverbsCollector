@@ -20,7 +20,7 @@ if "auth_mode" not in st.session_state:
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# ========== Background (UNCHANGED, AS REQUESTED) ==========
+# ========== Background (UNCHANGED) ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -64,7 +64,7 @@ def set_background(image_file):
     )
 set_background("Background.jpg")
 
-# ========== EXTRA CSS for CARD/FIELDS ==========
+# ========== EXTRA CSS for CARD/FIELDS + Removed blue button and white box ==========
 st.markdown("""
 <style>
 .card {
@@ -94,19 +94,29 @@ input[type="text"], input[type="password"], input[type="email"] {
     color: #162447 !important;
     margin-bottom: 1.00rem !important;
 }
+/* Remove blue background on buttons (Send OTP and others) */
 .stButton > button {
+    background-color: transparent !important;
+    color: #000 !important;
+    border: 1.5px solid #ccc !important;
     border-radius: 10px !important;
-    padding: 0.84rem 0 !important;
-    width: 100% !important;
-    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%) !important;
-    color: #fff !important;
-    font-size: 1.09rem !important;
-    font-weight: 700 !important;
-    border: none !important;
-    margin-top: 0.2rem !important;
-    margin-bottom: 0.65rem !important;
-    box-shadow: 0 2px 20px 0 rgba(25, 62, 152, 0.09);
-    transition: background 0.2s;
+    padding: 0.8rem 1rem !important;
+    font-weight: 600 !important;
+    width: auto !important;
+    box-shadow: none !important;
+    transition: background-color 0.3s ease;
+}
+.stButton > button:hover {
+    background-color: #eee !important;
+    color: #000 !important;
+}
+/* Remove the white box (empty div) above the form */
+div.block-container > div:first-child {
+    background: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 .switch-links {
     text-align: center;
