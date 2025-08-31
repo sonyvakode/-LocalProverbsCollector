@@ -36,17 +36,74 @@ def set_background(image_file):
             font-family: 'Segoe UI', sans-serif;
         }}
         .card {{
-            background-color: #fff;
-            padding: 2rem;
+            background-color: #1a1a2e;
+            padding: 3rem 2rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin: auto;
-            max-width: 420px;
+            max-width: 500px;
+            color: white;
         }}
-        h2 {{
-            text-align: center;
+        .auth-tabs {{
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #333;
+        }}
+        .auth-tab {{
+            padding: 1rem 2rem;
+            cursor: pointer;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }}
+        .auth-tab.active {{
+            color: #ff6b6b;
+            border-bottom-color: #ff6b6b;
+        }}
+        .login-methods {{
+            margin-bottom: 2rem;
+        }}
+        .method-title {{
+            color: #ccc;
             margin-bottom: 1rem;
-            color: #333;
+            font-size: 0.9rem;
+        }}
+        .method-options {{
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }}
+        .method-option {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ccc;
+        }}
+        .method-option input[type="radio"] {{
+            accent-color: #ff6b6b;
+        }}
+        .stTextInput > div > div > input {{
+            background-color: #2d2d44 !important;
+            border: 1px solid #444 !important;
+            color: white !important;
+            border-radius: 8px !important;
+            padding: 1rem !important;
+        }}
+        .stTextInput > div > div > input::placeholder {{
+            color: #888 !important;
+        }}
+        .stTextInput > label {{
+            color: #ccc !important;
+            font-weight: 500 !important;
+        }}
+        .stButton > button {{
+            background-color: #ff6b6b !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.75rem 2rem !important;
+            font-weight: 600 !important;
+            width: 100% !important;
         }}
         .switch-links {{
             text-align: center;
