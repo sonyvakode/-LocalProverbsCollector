@@ -21,7 +21,7 @@ if "auth_mode" not in st.session_state:
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# ========== Background ==========
+# ========== Background & Theme ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -58,12 +58,48 @@ def set_background(image_file):
             font-weight: 500;
             cursor: pointer;
         }}
+        /* Mobile-friendly */
+        @media (max-width: 600px) {{
+            .block-container {{
+                padding: 1rem;
+                max-width: 95%;
+            }}
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
 set_background("Background.jpg")
+
+# Dark/Light theme toggle
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
+
+theme = st.radio("Theme", ["light", "dark"], horizontal=True)
+st.session_state.theme = theme
+
+if st.session_state.theme == "dark":
+    st.markdown(
+        """
+        <style>
+        .stApp { background-color: #121212; color: white; }
+        .card { background-color: #1e1e1e; color: white; }
+        h1, h2, h3, h4, h5, h6, label { color: white !important; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+else:
+    st.markdown(
+        """
+        <style>
+        .stApp { background-color: #f8f9fa; color: black; }
+        .card { background-color: #ffffff; color: black; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
@@ -189,7 +225,7 @@ if not st.session_state.authenticated:
 
 # ========== MAIN APP ==========
 st.markdown(
-    "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
+    "<h1 style='text-align: center;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
 
@@ -219,32 +255,11 @@ if page == "Home":
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
 
-                # --- Show translation after submission ---
-                try:
-                    translated = translate.translate_text(proverb, "English")
-                    st.markdown(f"<div style='text-align: center; margin-top: 15px;'>"
-                                f"<b>Original:</b> {proverb}<br>"
-                                f"<b>Translated:</b> {translated}"
-                                f"</div>", unsafe_allow_html=True)
-                except Exception as e:
-                    st.warning(f"⚠️ Translation failed: {e}")
+                # Removed Translation display here ✅
             else:
                 st.error("❌ Provide both proverb and city.")
 
-    # ✅ New Inline Translate Section (directly on Home page)
-    st.markdown("---")
-    st.subheader("🌍 Translate a Proverb")
-    proverb_to_translate = st.text_input("Enter proverb to translate")
-    target_lang = st.selectbox("Choose target language", language.get_all_languages())
-    if st.button("Translate"):
-        if proverb_to_translate.strip():
-            try:
-                translated = translate.translate_text(proverb_to_translate, target_lang)
-                st.success(f"Translated: {translated}")
-            except Exception as e:
-                st.error(f"⚠️ Translation failed: {e}")
-        else:
-            st.warning("Please enter a proverb to translate.")
+    # ✅ Removed Inline Translate Section (completely gone)
 
 # Page: Proverb of the Day
 elif page == "Proverb of the day":
@@ -256,12 +271,11 @@ elif page == "Proverb of the day":
         all_proverbs = []
     if all_proverbs:
         selected = random.choice(all_proverbs)
-        translated = translate.translate_text(selected, "English")
+        # Removed translation display ✅
         st.markdown(
             f"""
-            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: #000;'>
+            <div style='text-align: center; margin-top: 20px; font-size: 18px;'>
                 <p><b>✨ Original:</b> {selected}</p>
-                <p><b>➡️ Translated:</b> {translated}</p>
             </div>
             """,
             unsafe_allow_html=True
