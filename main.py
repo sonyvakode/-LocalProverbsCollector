@@ -7,7 +7,7 @@ from utils import core, translate, vote, audio, language
 # Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# Session State
+# ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "otp_sent" not in st.session_state:
@@ -17,10 +17,10 @@ if "user_identifier" not in st.session_state:
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
-# API Base URL
+# Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# Background (unchanged)
+# Background (unchanged, simplified for demo)
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -46,17 +46,24 @@ def set_background(image_file):
             color: #111 !important;
             font-weight: 500 !important;
         }}
-        .solid-box {{
-            background-color: #ffffffcc;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
+        .card {{
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin: auto;
+            max-width: 420px;
         }}
-        .center {{
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .switch-links {{
+            text-align: center;
+            margin-top: 1rem;
+        }}
+        .switch-links a {{
+            color: #0073e6;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0 10px;
         }}
         </style>
         """,
@@ -64,167 +71,106 @@ def set_background(image_file):
     )
 set_background("Background.jpg")
 
-# Custom CSS for card and buttons (optional, maintain consistent style)
-st.markdown("""
-<style>
-.card {
-    background: #fff !important;
-    border-radius: 20px;
-    box-shadow: 0 8px 40px 0 rgba(25, 62, 152, 0.10);
-    max-width: 380px;
-    margin: 54px auto;
-    display: flex;
-    flex-direction: column;
-    padding: 38px 30px 32px 30px;
-}
-h2 {
-    font-weight: 700;
-    font-size: 2.0rem;
-    text-align: center;
-    color: #111;
-    margin-bottom: 1.13rem;
-}
-.stTextInput > div > div > input,
-input[type="text"], input[type="password"], input[type="email"] {
-    border-radius: 10px !important;
-    border: 1.5px solid #e0e6ef !important;
-    background: #f6f8fa !important;
-    padding: 0.87rem 1.1rem !important;
-    font-size: 1.06rem !important;
-    color: #162447 !important;
-    margin-bottom: 1.00rem !important;
-}
-.stButton > button {
-    border-radius: 10px !important;
-    padding: 0.84rem 0 !important;
-    width: 100% !important;
-    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%) !important;
-    color: #fff !important;
-    font-size: 1.09rem !important;
-    font-weight: 700 !important;
-    border: none !important;
-    margin-top: 0.2rem !important;
-    margin-bottom: 0.65rem !important;
-    box-shadow: 0 2px 20px 0 rgba(25, 62, 152, 0.09);
-    transition: background 0.2s;
-}
-.switch-links {
-    text-align: center;
-    margin-top: 13px;
-    font-size: 0.98rem;
-}
-.switch-links a {
-    color: #307aff;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-}
-.forgot-link {
-    font-size: 0.97rem;
-    color: #307aff;
-    text-decoration: none;
-    margin-bottom: 1.0rem;
-    margin-top: -0.8rem;
-    display: inline-block;
-    cursor: pointer;
-    font-weight: 500;
-}
-@media (max-width: 600px) {
-    .card {
-        width: 99vw;
-        min-width: 0;
-        padding: 20px 4vw 17px 4vw;
-        margin-top: 6vw;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
-# Authentication block replaced with your snippet exactly
+# ========= Authentication UI =============
 if not st.session_state.authenticated:
     with st.container():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        if st.session_state.auth_mode == "login":
-            st.markdown("<h2>Sign In</h2>", unsafe_allow_html=True)
-            user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
-            if not st.session_state.otp_sent:
-                if st.button("Send OTP"):
-                    try:
-                        response = requests.post(
-                            f"{API_BASE_URL}/send-otp",   # ✅ fixed path
-                            json={"phone": user_input}
-                        )
-                        if response.status_code == 200:
-                            st.session_state.otp_sent = True
-                            st.session_state.user_identifier = user_input
-                            st.success("✅ OTP sent successfully!")
-                        else:
-                            st.error(f"❌ Failed: {response.text}")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
-            else:
-                otp = st.text_input("Enter OTP", type="password")
-                if st.button("Verify OTP"):
-                    try:
-                        response = requests.post(
-                            f"{API_BASE_URL}/verify-otp",   # ✅ fixed path
-                            json={"phone": st.session_state.user_identifier, "otp": otp}
-                        )
-                        if response.status_code == 200 and response.json().get("verified"):
-                            st.session_state.authenticated = True
-                            st.success("🎉 Login successful!")
-                            st.rerun()
-                        else:
-                            st.error("❌ Invalid OTP.")
-                    except Exception as e:
-                        st.error(f"Error: {e}")
-            st.markdown(
-                """<div class="switch-links">
-                    <a onClick="window.location.reload()">Sign Up</a> | 
-                    <a onClick="window.location.reload()">Forgot Password?</a>
-                </div>""",
-                unsafe_allow_html=True,
-            )
-        elif st.session_state.auth_mode == "signup":
-            st.markdown("<h2>Sign Up</h2>", unsafe_allow_html=True)
-            phone = st.text_input("📱 Phone Number")
-            password = st.text_input("🔑 Password", type="password")
-            if st.button("Register"):
+
+    if st.session_state.auth_mode == "login":
+        st.markdown("<h2>Sign In</h2>", unsafe_allow_html=True)
+        user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
+        if not st.session_state.otp_sent:
+            if st.button("Send OTP"):
                 try:
-                    response = requests.post(f"{API_BASE_URL}/sign-up_send-otp",
-                                             json={"phone": phone, "password": password})
+                    response = requests.post(
+                        f"{API_BASE_URL}/send-otp",
+                        json={"phone": user_input}
+                    )
                     if response.status_code == 200:
-                        st.success("✅ Sign-up successful! Verify OTP sent.")
-                        st.session_state.auth_mode = "login"
-                        st.rerun()
+                        st.session_state.otp_sent = True
+                        st.session_state.user_identifier = user_input
+                        st.success("✅ OTP sent successfully!")
                     else:
                         st.error(f"❌ Failed: {response.text}")
                 except Exception as e:
                     st.error(f"Error: {e}")
-        elif st.session_state.auth_mode == "reset_password":
-            st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
-            phone = st.text_input("📱 Phone Number")
-            new_pass = st.text_input("🔑 New Password", type="password")
-            if st.button("Reset Password"):
+        else:
+            otp = st.text_input("Enter OTP", type="password")
+            if st.button("Verify OTP"):
                 try:
-                    response = requests.post(f"{API_BASE_URL}/reset-password",
-                                             json={"phone": phone, "new_password": new_pass})
-                    if response.status_code == 200:
-                        st.success("✅ Password reset successfully!")
-                        st.session_state.auth_mode = "login"
+                    response = requests.post(
+                        f"{API_BASE_URL}/verify-otp",
+                        json={"phone": st.session_state.user_identifier, "otp": otp}
+                    )
+                    if response.status_code == 200 and response.json().get("verified"):
+                        st.session_state.authenticated = True
+                        st.success("🎉 Login successful!")
                         st.rerun()
                     else:
-                        st.error(f"❌ Failed: {response.text}")
+                        st.error("❌ Invalid OTP.")
                 except Exception as e:
                     st.error(f"Error: {e}")
-        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown(
+            """
+            <div class="switch-links">
+                <a onClick="window.location.reload()">Sign Up</a> |
+                <a onClick="window.location.reload()">Forgot Password?</a>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    elif st.session_state.auth_mode == "signup":
+        st.markdown("<h2>Sign Up</h2>", unsafe_allow_html=True)
+        phone = st.text_input("📱 Phone Number")
+        password = st.text_input("🔑 Password", type="password")
+        if st.button("Register"):
+            try:
+                response = requests.post(f"{API_BASE_URL}/sign-up_send-otp", json={"phone": phone, "password": password})
+                if response.status_code == 200:
+                    st.success("✅ Sign-up successful! Verify OTP sent.")
+                    st.session_state.auth_mode = "login"
+                    st.rerun()
+                else:
+                    st.error(f"❌ Failed: {response.text}")
+            except Exception as e:
+                st.error(f"Error: {e}")
+
+    elif st.session_state.auth_mode == "reset_password":
+        st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
+        phone = st.text_input("📱 Phone Number")
+        new_pass = st.text_input("🔑 New Password", type="password")
+        if st.button("Reset Password"):
+            try:
+                response = requests.post(f"{API_BASE_URL}/reset-password", json={"phone": phone, "new_password": new_pass})
+                if response.status_code == 200:
+                    st.success("✅ Password reset successfully!")
+                    st.session_state.auth_mode = "login"
+                    st.rerun()
+                else:
+                    st.error(f"❌ Failed: {response.text}")
+            except Exception as e:
+                st.error(f"Error: {e}")
+
+        st.markdown(
+            """
+            <div class="switch-links">
+                <a onClick="window.location.reload()">Sign In</a>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# MAIN APP
+# ========= Main App ==========
 st.markdown(
     "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
+
+# Sidebar Navigation
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
 
 if page == "Home":
@@ -297,19 +243,16 @@ elif page == "States":
     for item in all_data:
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
-
-    # Sort with Unknown last
-    sorted_regions = sorted(
-        region_counts.items(),
-        key=lambda x: (x[0] == "Unknown", -x[1])
-    )
+    # Sort Unknown at bottom
+    sorted_regions = sorted(region_counts.items(), key=lambda x: (x[0] == "Unknown", -x[1]))
 
     if sorted_regions:
         import matplotlib.pyplot as plt
         regions = [item[0] for item in sorted_regions[:10]]
         counts = [item[1] for item in sorted_regions[:10]]
+
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.bar(regions, counts, color='#0073e6')  # normal blue color
+        bars = ax.bar(regions, counts, color='#0073e6')  # Normal blue color
         ax.set_xlabel('Regions')
         ax.set_ylabel('Number of Proverbs')
         ax.set_title('Top 10 Regions by Proverb Count')
