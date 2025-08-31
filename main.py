@@ -11,7 +11,6 @@ st.set_page_config(page_title="Indian Wisdom", layout="centered")
 # ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
-
 if "otp_sent" not in st.session_state:
     st.session_state.otp_sent = False
 if "user_identifier" not in st.session_state:
@@ -36,7 +35,7 @@ def set_background(image_file):
             font-family: 'Segoe UI', sans-serif;
             color: black !important;
         }}
-        h1, h2, p {{
+        h1, h2, p, label {{
             color: black !important;
         }}
         .login-card {{
@@ -46,6 +45,10 @@ def set_background(image_file):
             max-width: 420px;
             margin: 50px auto;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }}
+        .stTextInput > div > label {{
+            font-weight: bold;
+            color: black !important;
         }}
         .stTextInput > div > div > input {{
             border-radius: 8px !important;
@@ -88,8 +91,6 @@ set_background("Background.jpg")
 if not st.session_state.authenticated:
     # Centered login card
     st.markdown("<div class='login-card'>", unsafe_allow_html=True)
-
-    # Welcome text
     st.markdown("<h2 style='text-align:center; margin-bottom:20px;'>Welcome Back!</h2>", unsafe_allow_html=True)
 
     user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
@@ -224,10 +225,7 @@ elif page == "Proverb of the day":
         translated = translate.translate_text(selected, "English")
         st.markdown(
             f"""
-            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: black;'>
-                <p><b>✨ Original:</b> {selected}</p>
-                <p><b>➡️ Translated:</b> {translated}</p>
-            </div>
+            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: black;'>{selected}<br>➡️ {translated}</div>
             """,
             unsafe_allow_html=True
         )
