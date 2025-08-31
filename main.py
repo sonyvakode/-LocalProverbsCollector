@@ -4,6 +4,7 @@ import base64
 import requests
 from utils import core, translate, vote, audio, language
 
+
 # Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
@@ -17,10 +18,10 @@ if "user_identifier" not in st.session_state:
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
-# Centralized API base URL
+# ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# Background (unchanged, simplified for demo)
+# ========== Background ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -35,6 +36,7 @@ def set_background(image_file):
                         url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-position: center;
+            font-family: 'Segoe UI', sans-serif;
         }}
         textarea, input, select {{
             background-color: white !important;
@@ -46,24 +48,17 @@ def set_background(image_file):
             color: #111 !important;
             font-weight: 500 !important;
         }}
-        .card {{
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin: auto;
-            max-width: 420px;
+        .solid-box {{
+            background-color: #ffffffcc;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
         }}
-        .switch-links {{
-            text-align: center;
-            margin-top: 1rem;
-        }}
-        .switch-links a {{
-            color: #0073e6;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-            margin: 0 10px;
+        .center {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }}
         </style>
         """,
@@ -71,108 +66,158 @@ def set_background(image_file):
     )
 set_background("Background.jpg")
 
-# ========= Authentication UI =============
+# Additional styling for card (to keep UI consistent)
+st.markdown("""
+<style>
+.card {
+    background-color: #fff !important;
+    padding: 2rem !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    margin: auto !important;
+    max-width: 420px !important;
+}
+h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #333;
+}
+.switch-links {
+    text-align: center;
+    margin-top: 1rem;
+}
+.switch-links a {
+    color: #0073e6;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 0 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ========== Authentication ==========
 if not st.session_state.authenticated:
     with st.container():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-
-    if st.session_state.auth_mode == "login":
-        st.markdown("<h2>Sign In</h2>", unsafe_allow_html=True)
-        user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
-        if not st.session_state.otp_sent:
-            if st.button("Send OTP"):
+        if st.session_state.auth_mode == "login":
+            st.markdown("<h2>Sign In</h2>", unsafe_allow_html=True)
+            user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
+            if not st.session_state.otp_sent:
+                if st.button("Send OTP"):
+                    if not user_input.isdigit() or len(user_input) != 10:
+                        st.error("⚠️ Please enter a valid 10-digit phone number.")
+                    else:
+                        try:
+                            response = requests.post(
+                                f"{API_BASE_URL}/login/send-otp",
+                                json={"phone_number": user_input}   # ✅ correct key
+                            )
+                            if response.status_code == 200:
+                                st.session_state.otp_sent = True
+                                st.session_state.user_identifier = user_input
+                                st.success("✅ OTP sent successfully!")
+                            else:
+                                try:
+                                    st.error(f"❌ Failed: {response.json()}")
+                                except Exception:
+                                    st.error(f"❌ Failed: {response.text}")
+                        except requests.exceptions.RequestException as e:
+                            st.error(f"Error connecting to backend: {e}")
+            else:
+                otp = st.text_input("Enter OTP", type="password", max_chars=6)
+                if st.button("Verify OTP"):
+                    if not otp or len(otp) < 4:
+                        st.error("⚠️ Please enter the 6-digit OTP you received.")
+                    else:
+                        try:
+                            response = requests.post(
+                                f"{API_BASE_URL}/login/verify-otp",
+                                json={
+                                    "phone_number": st.session_state.user_identifier,
+                                    "otp_code": otp   # ✅ match backend expected key
+                                }
+                            )
+                            if response.status_code == 200:
+                                json_resp = {}
+                                try:
+                                    json_resp = response.json()
+                                except Exception:
+                                    pass
+                                verified = json_resp.get("verified", True)  # assume success if 200
+                                if verified:
+                                    st.session_state.authenticated = True
+                                    st.success("🎉 Login successful!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Invalid OTP.")
+                            else:
+                                try:
+                                    st.error(f"❌ Failed: {response.json()}")
+                                except Exception:
+                                    st.error(f"❌ Failed: {response.text}")
+                        except requests.exceptions.RequestException as e:
+                            st.error(f"Error connecting to backend: {e}")
+            st.markdown(
+                """<div class="switch-links">
+                    <a onClick="window.location.reload()">Sign Up</a> | 
+                    <a onClick="window.location.reload()">Forgot Password?</a>
+                </div>""",
+                unsafe_allow_html=True,
+            )
+        elif st.session_state.auth_mode == "signup":
+            st.markdown("<h2>Sign Up</h2>", unsafe_allow_html=True)
+            phone = st.text_input("📱 Phone Number")
+            password = st.text_input("🔑 Password", type="password")
+            if st.button("Register"):
                 try:
                     response = requests.post(
-                        f"{API_BASE_URL}/send-otp",
-                        json={"phone": user_input}
+                        f"{API_BASE_URL}/signup/send-otp",
+                        json={"phone_number": phone, "password": password}  # ✅ correct keys
                     )
                     if response.status_code == 200:
-                        st.session_state.otp_sent = True
-                        st.session_state.user_identifier = user_input
-                        st.success("✅ OTP sent successfully!")
-                    else:
-                        st.error(f"❌ Failed: {response.text}")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-        else:
-            otp = st.text_input("Enter OTP", type="password")
-            if st.button("Verify OTP"):
-                try:
-                    response = requests.post(
-                        f"{API_BASE_URL}/verify-otp",
-                        json={"phone": st.session_state.user_identifier, "otp": otp}
-                    )
-                    if response.status_code == 200 and response.json().get("verified"):
-                        st.session_state.authenticated = True
-                        st.success("🎉 Login successful!")
+                        st.success("✅ Sign-up successful! Verify OTP sent.")
+                        st.session_state.auth_mode = "login"
                         st.rerun()
                     else:
-                        st.error("❌ Invalid OTP.")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-
-        st.markdown(
-            """
-            <div class="switch-links">
-                <a onClick="window.location.reload()">Sign Up</a> |
-                <a onClick="window.location.reload()">Forgot Password?</a>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    elif st.session_state.auth_mode == "signup":
-        st.markdown("<h2>Sign Up</h2>", unsafe_allow_html=True)
-        phone = st.text_input("📱 Phone Number")
-        password = st.text_input("🔑 Password", type="password")
-        if st.button("Register"):
-            try:
-                response = requests.post(f"{API_BASE_URL}/sign-up_send-otp", json={"phone": phone, "password": password})
-                if response.status_code == 200:
-                    st.success("✅ Sign-up successful! Verify OTP sent.")
-                    st.session_state.auth_mode = "login"
-                    st.rerun()
-                else:
-                    st.error(f"❌ Failed: {response.text}")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-    elif st.session_state.auth_mode == "reset_password":
-        st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
-        phone = st.text_input("📱 Phone Number")
-        new_pass = st.text_input("🔑 New Password", type="password")
-        if st.button("Reset Password"):
-            try:
-                response = requests.post(f"{API_BASE_URL}/reset-password", json={"phone": phone, "new_password": new_pass})
-                if response.status_code == 200:
-                    st.success("✅ Password reset successfully!")
-                    st.session_state.auth_mode = "login"
-                    st.rerun()
-                else:
-                    st.error(f"❌ Failed: {response.text}")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-        st.markdown(
-            """
-            <div class="switch-links">
-                <a onClick="window.location.reload()">Sign In</a>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
+                        try:
+                            st.error(f"❌ Failed: {response.json()}")
+                        except Exception:
+                            st.error(f"❌ Failed: {response.text}")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Error connecting to backend: {e}")
+        elif st.session_state.auth_mode == "reset_password":
+            st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
+            phone = st.text_input("📱 Phone Number")
+            new_pass = st.text_input("🔑 New Password", type="password")
+            if st.button("Reset Password"):
+                try:
+                    response = requests.post(
+                        f"{API_BASE_URL}/reset-password",
+                        json={"phone_number": phone, "new_password": new_pass}  # ✅ correct keys
+                    )
+                    if response.status_code == 200:
+                        st.success("✅ Password reset successfully!")
+                        st.session_state.auth_mode = "login"
+                        st.rerun()
+                    else:
+                        try:
+                            st.error(f"❌ Failed: {response.json()}")
+                        except Exception:
+                            st.error(f"❌ Failed: {response.text}")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Error connecting to backend: {e}")
+        st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# ========= Main App ==========
+# ========== MAIN APP ==========
 st.markdown(
     "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
-
-# Sidebar Navigation
+# ✅ Sidebar Navigation (Removed Translate)
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
-
+# Page: Home
 if page == "Home":
     st.subheader("Submit Your Proverb")
     with st.form("submit_form"):
@@ -194,7 +239,7 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
-
+    # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
     st.subheader("🌍 Translate a Proverb")
     proverb_to_translate = st.text_input("Enter proverb to translate")
@@ -208,7 +253,7 @@ if page == "Home":
                 st.error(f"⚠️ Translation failed: {e}")
         else:
             st.warning("Please enter a proverb to translate.")
-
+# Page: Proverb of the Day
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the Day")
     try:
@@ -232,27 +277,38 @@ elif page == "Proverb of the day":
         st.warning("No proverbs available.")
     if st.button("🔄 Next Proverb"):
         st.rerun()
-
+# Page: States
 elif page == "States":
     st.subheader("📊 Proverbs Stats")
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
+
     st.markdown("#### 🏆 Leaderboard")
+
     all_data = vote.get_all()
     region_counts = {}
+    unknown_count = 0
     for item in all_data:
         region = item.get("city", "Unknown")
-        region_counts[region] = region_counts.get(region, 0) + 1
-    # Sort Unknown at bottom
-    sorted_regions = sorted(region_counts.items(), key=lambda x: (x[0] == "Unknown", -x[1]))
+        if region == "Unknown":
+            unknown_count +=1
+        else:
+            region_counts[region] = region_counts.get(region, 0) + 1
+    # Sort regions by counts descending
+    sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
+    # Append unknown count as last entry (if any)
+    if unknown_count > 0:
+        sorted_regions.append(("Unknown", unknown_count))
 
     if sorted_regions:
+        # Show as graph with lighter blue color
         import matplotlib.pyplot as plt
+
         regions = [item[0] for item in sorted_regions[:10]]
         counts = [item[1] for item in sorted_regions[:10]]
 
         fig, ax = plt.subplots(figsize=(10, 6))
-        bars = ax.bar(regions, counts, color='#0073e6')  # Normal blue color
+        bars = ax.bar(regions, counts, color='#2196f3')  # lighter blue (#2196f3)
         ax.set_xlabel('Regions')
         ax.set_ylabel('Number of Proverbs')
         ax.set_title('Top 10 Regions by Proverb Count')
@@ -260,6 +316,7 @@ elif page == "States":
         plt.tight_layout()
         st.pyplot(fig)
 
+        # Show as list below graph
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
