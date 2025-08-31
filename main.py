@@ -48,12 +48,12 @@ def set_background(image_file):
             background-color: white !important;
         }}
         .stButton > button {{
-            background-color: #555 !important;
-            color: white !important;
-            border: none !important;
+            background-color: white !important;
+            color: black !important;
+            border: 1px solid #555 !important;
             border-radius: 8px !important;
             padding: 0.75rem 2rem !important;
-            font-weight: 600 !important;
+            font-weight: bold !important;
             width: 100% !important;
         }}
         @media (max-width: 768px) {{
