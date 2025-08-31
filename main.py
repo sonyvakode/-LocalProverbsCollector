@@ -193,8 +193,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ✅ Added "Translate" to navigation
-page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "Translate", "States"])
+# ✅ Sidebar Navigation (Removed Translate)
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
 
 # Page: Home
 if page == "Home":
@@ -231,6 +231,21 @@ if page == "Home":
             else:
                 st.error("❌ Provide both proverb and city.")
 
+    # ✅ New Inline Translate Section (directly on Home page)
+    st.markdown("---")
+    st.subheader("🌍 Translate a Proverb")
+    proverb_to_translate = st.text_input("Enter proverb to translate")
+    target_lang = st.selectbox("Choose target language", language.get_all_languages())
+    if st.button("Translate"):
+        if proverb_to_translate.strip():
+            try:
+                translated = translate.translate_text(proverb_to_translate, target_lang)
+                st.success(f"Translated: {translated}")
+            except Exception as e:
+                st.error(f"⚠️ Translation failed: {e}")
+        else:
+            st.warning("Please enter a proverb to translate.")
+
 # Page: Proverb of the Day
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the Day")
@@ -255,21 +270,6 @@ elif page == "Proverb of the day":
         st.warning("No proverbs available.")
     if st.button("🔄 Next Proverb"):
         st.rerun()
-
-# ✅ New Page: Translate
-elif page == "Translate":
-    st.subheader("🌍 Translate a Proverb")
-    proverb_to_translate = st.text_input("Enter proverb to translate")
-    target_lang = st.selectbox("Choose target language", language.get_all_languages())
-    if st.button("Translate"):
-        if proverb_to_translate.strip():
-            try:
-                translated = translate.translate_text(proverb_to_translate, target_lang)
-                st.success(f"Translated: {translated}")
-            except Exception as e:
-                st.error(f"⚠️ Translation failed: {e}")
-        else:
-            st.warning("Please enter a proverb to translate.")
 
 # Page: States
 elif page == "States":
