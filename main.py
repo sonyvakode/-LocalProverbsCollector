@@ -15,6 +15,9 @@ if "otp_sent" not in st.session_state:
 if "user_identifier" not in st.session_state:
     st.session_state.user_identifier = ""
 
+# ✅ Centralized API base URL (update this once)
+API_BASE_URL = "https://your-api-domain.com"   # <-- change this to your server URL
+
 if not st.session_state.authenticated:
     st.title("🔒 Sign In with OTP")
 
@@ -22,9 +25,8 @@ if not st.session_state.authenticated:
         user_input = st.text_input("Enter your Email or Phone")
         if st.button("Send OTP"):
             try:
-                # ✅ Call your backend OTP API (update URL as per your server)
                 response = requests.post(
-                    "http://localhost:8000/send-otp",  # change to your send-otp API endpoint
+                    f"{API_BASE_URL}/send-otp",   # ✅ fixed
                     json={"user": user_input}
                 )
                 if response.status_code == 200:
@@ -32,7 +34,7 @@ if not st.session_state.authenticated:
                     st.session_state.user_identifier = user_input
                     st.success("✅ OTP sent successfully!")
                 else:
-                    st.error("❌ Failed to send OTP. Try again.")
+                    st.error(f"❌ Failed to send OTP: {response.text}")
             except Exception as e:
                 st.error(f"Error sending OTP: {e}")
 
@@ -40,9 +42,8 @@ if not st.session_state.authenticated:
         otp = st.text_input("Enter OTP", type="password")
         if st.button("Verify OTP"):
             try:
-                # ✅ Verify OTP API (update URL as per your server)
                 response = requests.post(
-                    "http://localhost:8000/verify-otp",  # change to your verify-otp API endpoint
+                    f"{API_BASE_URL}/verify-otp",   # ✅ fixed
                     json={"user": st.session_state.user_identifier, "otp": otp}
                 )
                 if response.status_code == 200 and response.json().get("verified"):
