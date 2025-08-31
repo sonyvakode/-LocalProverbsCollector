@@ -3,6 +3,8 @@ import random
 import base64
 import requests
 from utils import core, translate, vote, audio, language
+import os
+import matplotlib.pyplot as plt  # ✅ for graph
 
 # Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
@@ -67,13 +69,10 @@ set_background("Background.jpg")
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-
     with st.container():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-
         if st.session_state.auth_mode == "login":
             st.markdown("<h2>Sign In</h2>", unsafe_allow_html=True)
-
             user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
             if not st.session_state.otp_sent:
                 if st.button("Send OTP"):
@@ -130,7 +129,6 @@ if not st.session_state.authenticated:
                                     st.error(f"❌ Failed: {response.text}")
                         except requests.exceptions.RequestException as e:
                             st.error(f"Error connecting to backend: {e}")
-
             st.markdown(
                 """<div class="switch-links">
                     <a onClick="window.location.reload()">Sign Up</a> | 
@@ -138,7 +136,6 @@ if not st.session_state.authenticated:
                 </div>""",
                 unsafe_allow_html=True,
             )
-
         elif st.session_state.auth_mode == "signup":
             st.markdown("<h2>Sign Up</h2>", unsafe_allow_html=True)
             phone = st.text_input("📱 Phone Number")
@@ -160,7 +157,6 @@ if not st.session_state.authenticated:
                             st.error(f"❌ Failed: {response.text}")
                 except requests.exceptions.RequestException as e:
                     st.error(f"Error connecting to backend: {e}")
-
         elif st.session_state.auth_mode == "reset_password":
             st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
             phone = st.text_input("📱 Phone Number")
@@ -182,9 +178,7 @@ if not st.session_state.authenticated:
                             st.error(f"❌ Failed: {response.text}")
                 except requests.exceptions.RequestException as e:
                     st.error(f"Error connecting to backend: {e}")
-
         st.markdown("</div>", unsafe_allow_html=True)
-
     st.stop()
 
 # ========== MAIN APP ==========
@@ -193,8 +187,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ✅ Sidebar Navigation (Removed Translate)
-page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
+# ✅ Sidebar Navigation (added contributors + contributing)
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States", "Contributors", "Contributing Guide"])
 
 # Page: Home
 if page == "Home":
@@ -218,8 +212,6 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
-
-                # --- Show translation after submission ---
                 try:
                     translated = translate.translate_text(proverb, "English")
                     st.markdown(f"<div style='text-align: center; margin-top: 15px;'>"
@@ -230,8 +222,6 @@ if page == "Home":
                     st.warning(f"⚠️ Translation failed: {e}")
             else:
                 st.error("❌ Provide both proverb and city.")
-
-    # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
     st.subheader("🌍 Translate a Proverb")
     proverb_to_translate = st.text_input("Enter proverb to translate")
@@ -276,7 +266,6 @@ elif page == "States":
     st.subheader("📊 Proverbs Stats")
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
-
     st.markdown("#### 🏆 Leaderboard")
     all_data = vote.get_all()
     region_counts = {}
@@ -287,5 +276,33 @@ elif page == "States":
     if sorted_regions:
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
+        # ✅ Add graph
+        st.markdown("### 📊 Leaderboard Graph")
+        regions = [r for r, _ in sorted_regions[:10]]
+        counts = [c for _, c in sorted_regions[:10]]
+        fig, ax = plt.subplots()
+        ax.bar(regions, counts)
+        ax.set_xlabel("Region")
+        ax.set_ylabel("Proverbs Count")
+        ax.set_title("Top 10 Regions by Proverbs Collected")
+        st.pyplot(fig)
     else:
         st.info("No data yet.")
+
+# Page: Contributors
+elif page == "Contributors":
+    st.subheader("👥 Contributors")
+    try:
+        with open("CONTRIBUTORS.md", "r", encoding="utf-8") as f:
+            st.markdown(f.read())
+    except FileNotFoundError:
+        st.warning("No CONTRIBUTORS.md file found.")
+
+# Page: Contributing Guide
+elif page == "Contributing Guide":
+    st.subheader("📖 Contributing Guide")
+    try:
+        with open("CONTRIBUTING.md", "r", encoding="utf-8") as f:
+            st.markdown(f.read())
+    except FileNotFoundError:
+        st.warning("No CONTRIBUTING.md file found.")
