@@ -17,8 +17,8 @@ if "user_identifier" not in st.session_state:
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
-# ✅ Centralized API base URL
-API_BASE_URL = "http://localhost:8000/api/v1/auth/login"   # updated for backend
+# ✅ Centralized API base URL (UPDATED from localhost → swecha API)
+API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
 # ========== Background ==========
 def set_background(image_file):
@@ -78,7 +78,7 @@ if not st.session_state.authenticated:
                 if st.button("Send OTP"):
                     try:
                         response = requests.post(
-                            f"{API_BASE_URL}/send-otp",
+                            f"{API_BASE_URL}/login/send-otp",
                             json={"phone": user_input}
                         )
                         if response.status_code == 200:
@@ -94,7 +94,7 @@ if not st.session_state.authenticated:
                 if st.button("Verify OTP"):
                     try:
                         response = requests.post(
-                            f"{API_BASE_URL}/verify-otp",
+                            f"{API_BASE_URL}/login/verify-otp",
                             json={"phone": st.session_state.user_identifier, "otp": otp}
                         )
                         if response.status_code == 200 and response.json().get("verified"):
