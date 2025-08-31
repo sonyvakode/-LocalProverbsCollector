@@ -10,6 +10,7 @@ st.set_page_config(page_title="Indian Wisdom", layout="centered")
 # ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+
 if "otp_sent" not in st.session_state:
     st.session_state.otp_sent = False
 if "user_identifier" not in st.session_state:
@@ -20,7 +21,7 @@ if "auth_mode" not in st.session_state:
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# ========== Background (UNCHANGED) ==========
+# ========== Background ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -34,127 +35,105 @@ def set_background(image_file):
             background-position: center;
             font-family: 'Segoe UI', sans-serif;
         }}
+        .card {{
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin: auto;
+            max-width: 420px;
+        }}
+        h2 {{
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #333;
+        }}
+        .auth-methods {{
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }}
+        .method-btn {{
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            font-weight: 500;
+        }}
+        .method-btn.active {{
+            border-color: #0073e6;
+            background: #0073e6;
+            color: white;
+        }}
+        .stTextInput > div > div > input {{
+            border-radius: 8px !important;
+            border: 1px solid #ddd !important;
+            padding: 0.75rem !important;
+        }}
+        .stButton > button {{
+            background-color: #0073e6 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.75rem 2rem !important;
+            font-weight: 600 !important;
+            width: 100% !important;
+        }}
+        @media (max-width: 768px) {{
+            .card {{
+                max-width: 95%;
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }}
+            .auth-methods {{
+                flex-direction: column;
+                gap: 0.5rem;
+            }}
+            .method-btn {{
+                width: 100%;
+                text-align: center;
+            }}
+            .stTextInput > div > div > input {{
+                font-size: 16px !important;
+            }}
+            .stButton > button {{
+                font-size: 16px !important;
+                padding: 1rem !important;
+            }}
+        }}
+        .switch-links {{
+            text-align: center;
+            margin-top: 1rem;
+        }}
+        .switch-links a {{
+            color: #0073e6;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0 10px;
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
-set_background("Background.jpg")
 
-# ========== ADDITIONAL LOGIN CARD STYLES ==========
-st.markdown("""
-<style>
-.login-card {
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 8px 40px 0 rgba(25, 62, 152, 0.10);
-    max-width: 380px;
-    padding: 39px 32px 25px 32px;
-    margin: 54px auto;
-    display: flex;
-    flex-direction: column;
-}
-.login-title {
-    font-weight: 700;
-    font-size: 2.1rem;
-    text-align: center;
-    color: #111;
-    margin-bottom: 1.10rem;
-}
-.tab-group {
-    display: flex;
-    width: 100%;
-    margin-bottom: 1.2rem;
-}
-.tab-btn {
-    flex: 1;
-    padding: 0.6rem 0;
-    border-radius: 10px 10px 10px 10px;
-    border: none;
-    background: #eee;
-    font-size: 1.07rem;
-    color: #193E98;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.17s, color 0.15s;
-    outline: none;
-}
-.tab-btn.active {
-    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%);
-    color: #fff;
-}
-.stTextInput > div > div > input, input[type="text"], input[type="password"], input[type="email"] {
-    border-radius: 10px !important;
-    border: 1.5px solid #e0e6ef !important;
-    background: #f4f7fa !important;
-    padding: 0.87rem 1.1rem !important;
-    font-size: 1.07rem !important;
-    color: #162447 !important;
-    margin-bottom: 1.05rem !important;
-}
-.stButton > button {
-    border-radius: 10px !important;
-    padding: 0.84rem 0 !important;
-    width: 100% !important;
-    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%) !important;
-    color: #fff !important;
-    font-size: 1.13rem !important;
-    font-weight: 700 !important;
-    border: none !important;
-    margin-top: 0.35rem !important;
-    box-shadow: 0 2px 20px 0 rgba(25, 62, 152, 0.09);
-    transition: background 0.2s;
-}
-.forgot-link {
-    font-size: 0.97rem;
-    color: #307aff;
-    text-decoration: none;
-    margin-bottom: 1.2rem;
-    margin-top: -0.8rem;
-    display: inline-block;
-    cursor: pointer;
-    font-weight: 500;
-}
-.switch-links {
-    text-align: center;
-    margin-top: 13px;
-    font-size: 0.98rem;
-}
-.switch-links a {
-    color: #307aff;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-}
-@media (max-width: 600px) {
-    .login-card {
-        width: 96vw;
-        min-width: 0;
-        padding: 21px 3vw 12px 3vw;
-        margin-top: 6vw;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
+set_background("Background.jpg")
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-    st.markdown('<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:92vh;"><div class="login-card">', unsafe_allow_html=True)
 
-    # Tabs (visual only; adapt to your logic if needed)
-    st.markdown(
-        f"""
-        <div class="tab-group">
-            <button class="tab-btn {'active' if st.session_state.auth_mode == 'login' else ''}" onclick="window.location.reload()">Login</button>
-            <button class="tab-btn {'active' if st.session_state.auth_mode == 'signup' else ''}" onclick="window.location.reload()">Signup</button>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.container():
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-    # Title
     if st.session_state.auth_mode == "login":
-        st.markdown('<div class="login-title">Login Form</div>', unsafe_allow_html=True)
+        st.markdown("<div class='form-title'>Welcome Back!</div>", unsafe_allow_html=True)
+
         user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
+        
         if not st.session_state.otp_sent:
             if st.button("Send OTP", key="send_otp_btn"):
                 if not user_input.isdigit() or len(user_input) != 10:
@@ -180,6 +159,7 @@ if not st.session_state.authenticated:
         else:
             st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
             otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6)
+            
             col1, col2 = st.columns([3, 1])
             with col1:
                 if st.button("Verify & Sign In", key="verify_otp_btn"):
@@ -214,6 +194,7 @@ if not st.session_state.authenticated:
                                     st.error(f"❌ Failed: {response.text}")
                         except requests.exceptions.RequestException as e:
                             st.error(f"Error connecting to backend: {e}")
+            
             with col2:
                 if st.button("↩️", key="back_btn", help="Go back"):
                     st.session_state.otp_sent = False
@@ -222,14 +203,14 @@ if not st.session_state.authenticated:
 
         st.markdown(
             """<div class="switch-links">
-                Not a member? <a onclick="window.location.reload()">Signup now</a><br>
-                <a class="forgot-link" onclick="window.location.reload()">Forgot password?</a>
+                Don't have an account? <a onclick="window.location.reload()">Sign Up</a><br>
+                <a onclick="window.location.reload()">Forgot Password?</a>
             </div>""",
             unsafe_allow_html=True,
         )
 
     elif st.session_state.auth_mode == "signup":
-        st.markdown('<div class="login-title">Signup Form</div>', unsafe_allow_html=True)
+        st.markdown("<div class='form-title'>Create Account</div>", unsafe_allow_html=True)
         phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
         password = st.text_input("🔑 Create Password", type="password", placeholder="Create a secure password")
         if st.button("Create Account", key="signup_btn"):
@@ -249,15 +230,16 @@ if not st.session_state.authenticated:
                         st.error(f"❌ Failed: {response.text}")
             except requests.exceptions.RequestException as e:
                 st.error(f"Error connecting to backend: {e}")
+        
         st.markdown(
             """<div class="switch-links">
-                Already a member? <a onclick="window.location.reload()">Login</a>
+                Already have an account? <a onclick="window.location.reload()">Sign In</a>
             </div>""",
             unsafe_allow_html=True,
         )
 
     elif st.session_state.auth_mode == "reset_password":
-        st.markdown('<div class="login-title">Reset Password</div>', unsafe_allow_html=True)
+        st.markdown("<div class='form-title'>Reset Password</div>", unsafe_allow_html=True)
         phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
         new_pass = st.text_input("🔑 New Password", type="password", placeholder="Enter new password")
         if st.button("Reset Password", key="reset_btn"):
@@ -277,14 +259,15 @@ if not st.session_state.authenticated:
                         st.error(f"❌ Failed: {response.text}")
             except requests.exceptions.RequestException as e:
                 st.error(f"Error connecting to backend: {e}")
+        
         st.markdown(
             """<div class="switch-links">
-                Remember your password? <a onclick="window.location.reload()">Login</a>
+                Remember your password? <a onclick="window.location.reload()">Sign In</a>
             </div>""",
             unsafe_allow_html=True,
         )
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ========== MAIN APP ==========
@@ -292,8 +275,10 @@ st.markdown(
     "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
+
 # ✅ Sidebar Navigation (Removed Translate)
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
+
 # Page: Home
 if page == "Home":
     st.subheader("Submit Your Proverb")
@@ -316,6 +301,8 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
+
+         
 
     # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
@@ -362,6 +349,7 @@ elif page == "States":
     st.subheader("📊 Proverbs Stats")
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
+
     st.markdown("#### 🏆 Leaderboard")
     all_data = vote.get_all()
     region_counts = {}
@@ -369,11 +357,13 @@ elif page == "States":
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
     sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
+    
     if sorted_regions:
         # Show as graph
         import matplotlib.pyplot as plt
         regions = [item[0] for item in sorted_regions[:10]]
         counts = [item[1] for item in sorted_regions[:10]]
+        
         fig, ax = plt.subplots(figsize=(10, 6))
         bars = ax.bar(regions, counts, color='#0073e6')
         ax.set_xlabel('Regions')
@@ -382,6 +372,7 @@ elif page == "States":
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
         st.pyplot(fig)
+        
         # Also show as list
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
