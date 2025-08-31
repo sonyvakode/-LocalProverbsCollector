@@ -16,7 +16,7 @@ if "otp_sent" not in st.session_state:
 if "user_identifier" not in st.session_state:
     st.session_state.user_identifier = ""
 if "auth_mode" not in st.session_state:
-    st.session_state.auth_mode = "login"  # login | signup | reset_password | change_password
+    st.session_state.auth_mode = "login"
 
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
@@ -37,12 +37,8 @@ def set_background(image_file):
             text-align: center;
             font-size: 48px;
             font-weight: bold;
-            background-color: #D2B48C;  /* Light brown */
-            padding: 1rem 0.5rem;
-            border-radius: 12px;
             margin: 2rem auto;
             color: black !important;
-            width: fit-content;
         }}
         .stTextInput > div > div > input {{
             border-radius: 8px !important;
@@ -73,7 +69,6 @@ def set_background(image_file):
         @media (max-width: 768px) {{
             .auth-title {{
                 font-size: 36px;
-                padding: 0.75rem 0.5rem;
             }}
         }}
         </style>
@@ -225,13 +220,4 @@ elif page == "States":
         ax.bar(regions, counts)  # Default colors
         ax.set_xlabel('Regions')
         ax.set_ylabel('Number of Proverbs')
-        ax.set_title('Top 10 Regions by Proverb Count')
-        plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-        st.pyplot(fig)
-        
-        st.markdown("**Detailed Rankings:**")
-        for i, (region, count) in enumerate(sorted_regions[:10], start=1):
-            st.write(f"{i}. {region}: {count} proverbs")
-    else:
-        st.info("No data yet.")
+        ax.set_title
