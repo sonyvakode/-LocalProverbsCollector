@@ -18,7 +18,7 @@ if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
 # ✅ Centralized API base URL
-API_BASE_URL = "http://localhost:8000/api/v1/auth/login"   # fixed base path
+API_BASE_URL = "http://localhost:8000/api/v1/auth/login"   # updated for backend
 
 # ========== Background ==========
 def set_background(image_file):
@@ -78,7 +78,7 @@ if not st.session_state.authenticated:
                 if st.button("Send OTP"):
                     try:
                         response = requests.post(
-                            f"{API_BASE_URL}/send-otp",   # ✅ fixed path
+                            f"{API_BASE_URL}/send-otp",
                             json={"phone": user_input}
                         )
                         if response.status_code == 200:
@@ -94,7 +94,7 @@ if not st.session_state.authenticated:
                 if st.button("Verify OTP"):
                     try:
                         response = requests.post(
-                            f"{API_BASE_URL}/verify-otp",   # ✅ fixed path
+                            f"{API_BASE_URL}/verify-otp",
                             json={"phone": st.session_state.user_identifier, "otp": otp}
                         )
                         if response.status_code == 200 and response.json().get("verified"):
