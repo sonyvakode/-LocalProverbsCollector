@@ -87,7 +87,6 @@ def set_background(image_file):
             .card {{
                 max-width: 95%;
                 padding: 1.5rem;
-                margin: 1rem auto;
             }}
             .auth-methods {{
                 flex-direction: column;
@@ -96,13 +95,6 @@ def set_background(image_file):
             .method-btn {{
                 width: 100%;
                 text-align: center;
-            }}
-            .stTextInput > div > div > input {{
-                font-size: 16px !important;
-            }}
-            .stButton > button {{
-                font-size: 16px !important;
-                padding: 1rem !important;
             }}
         }}
         .switch-links {{
@@ -114,7 +106,6 @@ def set_background(image_file):
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
-            margin: 0 10px;
         }}
         </style>
         """,
@@ -357,24 +348,7 @@ elif page == "States":
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
     sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
-    
     if sorted_regions:
-        # Show as graph
-        import matplotlib.pyplot as plt
-        regions = [item[0] for item in sorted_regions[:10]]
-        counts = [item[1] for item in sorted_regions[:10]]
-        
-        fig, ax = plt.subplots(figsize=(10, 6))
-        bars = ax.bar(regions, counts, color='#0073e6')
-        ax.set_xlabel('Regions')
-        ax.set_ylabel('Number of Proverbs')
-        ax.set_title('Top 10 Regions by Proverb Count')
-        plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-        st.pyplot(fig)
-        
-        # Also show as list
-        st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
     else:
