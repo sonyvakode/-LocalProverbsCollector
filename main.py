@@ -76,53 +76,59 @@ if not st.session_state.authenticated:
             user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
             if not st.session_state.otp_sent:
                 if st.button("Send OTP"):
-                    try:
-                        response = requests.post(
-                            f"{API_BASE_URL}/login/send-otp",
-                            json={"phone_number": user_input}   # ✅ correct key
-                        )
-                        if response.status_code == 200:
-                            st.session_state.otp_sent = True
-                            st.session_state.user_identifier = user_input
-                            st.success("✅ OTP sent successfully!")
-                        else:
-                            try:
-                                st.error(f"❌ Failed: {response.json()}")
-                            except Exception:
-                                st.error(f"❌ Failed: {response.text}")
-                    except requests.exceptions.RequestException as e:
-                        st.error(f"Error connecting to backend: {e}")
-            else:
-                otp = st.text_input("Enter OTP", type="password")
-                if st.button("Verify OTP"):
-                    try:
-                        response = requests.post(
-                            f"{API_BASE_URL}/login/verify-otp",
-                            json={
-                                "phone_number": st.session_state.user_identifier,
-                                "otp_code": otp
-                            }  # ✅ correct keys
-                        )
-                        if response.status_code == 200:
-                            json_resp = {}
-                            try:
-                                json_resp = response.json()
-                            except Exception:
-                                pass
-                            verified = json_resp.get("verified", True)  # assume success if 200
-                            if verified:
-                                st.session_state.authenticated = True
-                                st.success("🎉 Login successful!")
-                                st.rerun()
+                    if not user_input.isdigit() or len(user_input) != 10:
+                        st.error("⚠️ Please enter a valid 10-digit phone number.")
+                    else:
+                        try:
+                            response = requests.post(
+                                f"{API_BASE_URL}/login/send-otp",
+                                json={"phone_number": user_input}   # ✅ correct key
+                            )
+                            if response.status_code == 200:
+                                st.session_state.otp_sent = True
+                                st.session_state.user_identifier = user_input
+                                st.success("✅ OTP sent successfully!")
                             else:
-                                st.error("❌ Invalid OTP.")
-                        else:
-                            try:
-                                st.error(f"❌ Failed: {response.json()}")
-                            except Exception:
-                                st.error(f"❌ Failed: {response.text}")
-                    except requests.exceptions.RequestException as e:
-                        st.error(f"Error connecting to backend: {e}")
+                                try:
+                                    st.error(f"❌ Failed: {response.json()}")
+                                except Exception:
+                                    st.error(f"❌ Failed: {response.text}")
+                        except requests.exceptions.RequestException as e:
+                            st.error(f"Error connecting to backend: {e}")
+            else:
+                otp = st.text_input("Enter OTP", type="password", max_chars=6)
+                if st.button("Verify OTP"):
+                    if not otp or len(otp) < 4:
+                        st.error("⚠️ Please enter the 4-digit OTP you received.")
+                    else:
+                        try:
+                            response = requests.post(
+                                f"{API_BASE_URL}/login/verify-otp",
+                                json={
+                                    "phone_number": st.session_state.user_identifier,
+                                    "otp_code": otp
+                                }  # ✅ correct keys
+                            )
+                            if response.status_code == 200:
+                                json_resp = {}
+                                try:
+                                    json_resp = response.json()
+                                except Exception:
+                                    pass
+                                verified = json_resp.get("verified", True)  # assume success if 200
+                                if verified:
+                                    st.session_state.authenticated = True
+                                    st.success("🎉 Login successful!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Invalid OTP.")
+                            else:
+                                try:
+                                    st.error(f"❌ Failed: {response.json()}")
+                                except Exception:
+                                    st.error(f"❌ Failed: {response.text}")
+                        except requests.exceptions.RequestException as e:
+                            st.error(f"Error connecting to backend: {e}")
 
             st.markdown(
                 """<div class="switch-links">
