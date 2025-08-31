@@ -20,7 +20,7 @@ if "auth_mode" not in st.session_state:
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# ========== Background (UNCHANGED) ==========
+# ========== Background (unchanged) ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -64,7 +64,7 @@ def set_background(image_file):
     )
 set_background("Background.jpg")
 
-# ========== EXTRA CSS for CARD/FIELDS + Removed blue button and white box ==========
+# ========== Extra styles for form elements ==========
 st.markdown("""
 <style>
 .card {
@@ -76,51 +76,53 @@ st.markdown("""
     display: flex;
     flex-direction: column;
     padding: 38px 30px 32px 30px;
+    position: relative;
 }
 .form-title {
     font-weight: 700;
-    font-size: 2.0rem;
+    font-size: 2rem;
     text-align: center;
     color: #111;
-    margin-bottom: 1.13rem;
+    margin: 0;
+    padding: 1rem 0 2rem 0;
+    border-radius: 12px;
+    background: #fff;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    position: absolute;
+    top: -80px;
+    left: 0;
 }
 .stTextInput > div > div > input,
 input[type="text"], input[type="password"], input[type="email"] {
-    border-radius: 10px !important;
-    border: 1.5px solid #e0e6ef !important;
-    background: #f6f8fa !important;
-    padding: 0.87rem 1.1rem !important;
-    font-size: 1.06rem !important;
-    color: #162447 !important;
-    margin-bottom: 1.00rem !important;
+    border-radius: 5px !important;
+    border: 1.2px solid #999 !important;
+    background: #fff !important;
+    padding: 0.9rem 1.1rem !important;
+    font-size: 1.05rem !important;
+    color: #222 !important;
+    margin-bottom: 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box;
 }
-/* Remove blue background on buttons (Send OTP and others) */
 .stButton > button {
-    background-color: transparent !important;
-    color: #000 !important;
-    border: 1.5px solid #ccc !important;
-    border-radius: 10px !important;
-    padding: 0.8rem 1rem !important;
+    border-radius: 8px !important;
+    padding: 0.75rem 1.5rem !important;
+    border: 1.5px solid #bbb !important;
+    background-color: #f8f8f8 !important;
+    color: #333 !important;
     font-weight: 600 !important;
     width: auto !important;
     box-shadow: none !important;
+    cursor: pointer;
     transition: background-color 0.3s ease;
 }
 .stButton > button:hover {
-    background-color: #eee !important;
-    color: #000 !important;
-}
-/* Remove the white box (empty div) above the form */
-div.block-container > div:first-child {
-    background: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
+    background-color: #e2e2e2 !important;
 }
 .switch-links {
     text-align: center;
-    margin-top: 13px;
+    margin-top: 14px;
     font-size: 0.98rem;
 }
 .switch-links a {
@@ -133,18 +135,22 @@ div.block-container > div:first-child {
     font-size: 0.97rem;
     color: #307aff;
     text-decoration: none;
-    margin-bottom: 1.0rem;
-    margin-top: -0.8rem;
+    margin-bottom: 1rem;
+    margin-top: -1rem;
     display: inline-block;
     cursor: pointer;
     font-weight: 500;
 }
 @media (max-width: 600px) {
     .card {
-        width: 99vw;
-        min-width: 0;
-        padding: 20px 4vw 17px 4vw;
-        margin-top: 6vw;
+        max-width: 96vw;
+        margin: 20vh auto 3rem auto;
+        padding: 36px 20px 32px 20px;
+    }
+    .form-title {
+        top: -70px;
+        font-size: 1.6rem;
+        padding: 0.8rem 0;
     }
 }
 </style>
@@ -154,8 +160,9 @@ div.block-container > div:first-child {
 if not st.session_state.authenticated:
     with st.container():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-    if st.session_state.auth_mode == "login":
         st.markdown("<div class='form-title'>Welcome Back!</div>", unsafe_allow_html=True)
+
+    if st.session_state.auth_mode == "login":
         user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
         
         if not st.session_state.otp_sent:
@@ -288,6 +295,7 @@ if not st.session_state.authenticated:
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
 
 # ========== MAIN APP ==========
