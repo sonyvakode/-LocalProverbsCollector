@@ -112,10 +112,10 @@ if not st.session_state.authenticated:
                         try:
                             response = requests.post(
                                 f"{API_BASE_URL}/login/verify-otp",
-                                json={{
+                                json={
                                     "phone_number": st.session_state.user_identifier,
                                     "otp_code": otp
-                                }}
+                                }
                             )
                             if response.status_code == 200:
                                 json_resp = {}
