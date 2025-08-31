@@ -34,6 +34,7 @@ def set_background(image_file):
             background-size: cover;
             background-position: center;
             font-family: 'Segoe UI', sans-serif;
+            color: black !important;
         }}
         .card {{
             background-color: #fff;
@@ -42,11 +43,10 @@ def set_background(image_file):
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin: auto;
             max-width: 420px;
+            color: black !important;
         }}
-        h2 {{
-            text-align: center;
-            margin-bottom: 1rem;
-            color: #333;
+        h2, h1, p {{
+            color: black !important;
         }}
         .auth-methods {{
             display: flex;
@@ -56,26 +56,27 @@ def set_background(image_file):
         }}
         .method-btn {{
             padding: 0.75rem 1.5rem;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #ccc;
             border-radius: 8px;
-            background: white;
+            background: #f0f0f0;
             cursor: pointer;
             transition: all 0.3s ease;
-            color: #666;
+            color: black;
             font-weight: 500;
         }}
         .method-btn.active {{
-            border-color: #0073e6;
-            background: #0073e6;
+            border-color: #333;
+            background: #333;
             color: white;
         }}
         .stTextInput > div > div > input {{
             border-radius: 8px !important;
             border: 1px solid #ddd !important;
             padding: 0.75rem !important;
+            color: black !important;
         }}
         .stButton > button {{
-            background-color: #0073e6 !important;
+            background-color: #555 !important;
             color: white !important;
             border: none !important;
             border-radius: 8px !important;
@@ -110,7 +111,7 @@ def set_background(image_file):
             margin-top: 1rem;
         }}
         .switch-links a {{
-            color: #0073e6;
+            color: #000;
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
@@ -276,7 +277,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ✅ Sidebar Navigation (Removed Translate)
+# ✅ Sidebar Navigation
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
 
 # Page: Home
@@ -302,9 +303,7 @@ if page == "Home":
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
 
-         
-
-    # ✅ New Inline Translate Section (directly on Home page)
+    # Translate Section
     st.markdown("---")
     st.subheader("🌍 Translate a Proverb")
     proverb_to_translate = st.text_input("Enter proverb to translate")
@@ -332,7 +331,7 @@ elif page == "Proverb of the day":
         translated = translate.translate_text(selected, "English")
         st.markdown(
             f"""
-            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: #000;'>
+            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: black;'>
                 <p><b>✨ Original:</b> {selected}</p>
                 <p><b>➡️ Translated:</b> {translated}</p>
             </div>
@@ -365,7 +364,7 @@ elif page == "States":
         counts = [item[1] for item in sorted_regions[:10]]
         
         fig, ax = plt.subplots(figsize=(10, 6))
-        bars = ax.bar(regions, counts, color='#0073e6')
+        bars = ax.bar(regions, counts)  # Default colors
         ax.set_xlabel('Regions')
         ax.set_ylabel('Number of Proverbs')
         ax.set_title('Top 10 Regions by Proverb Count')
