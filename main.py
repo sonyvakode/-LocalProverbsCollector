@@ -11,12 +11,13 @@ st.set_page_config(page_title="Indian Wisdom", layout="centered")
 # ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+
 if "otp_sent" not in st.session_state:
     st.session_state.otp_sent = False
 if "user_identifier" not in st.session_state:
     st.session_state.user_identifier = ""
 if "auth_mode" not in st.session_state:
-    st.session_state.auth_mode = "login"  # login | signup | reset_password | change_password
+    st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
 
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
@@ -35,19 +36,7 @@ def set_background(image_file):
             font-family: 'Segoe UI', sans-serif;
             color: black !important;
         }}
-        h1, h2, p, label {{
-            color: black !important;
-        }}
-        .login-card {{
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 25px 20px;
-            border-radius: 15px;
-            max-width: 420px;
-            margin: 50px auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }}
-        .stTextInput > div > label {{
-            font-weight: bold;
+        h1, h2, p {{
             color: black !important;
         }}
         .stTextInput > div > div > input {{
@@ -55,7 +44,7 @@ def set_background(image_file):
             border: 1px solid #ddd !important;
             padding: 0.75rem !important;
             color: black !important;
-            width: 100% !important;
+            font-weight: bold !important;
         }}
         .stButton > button {{
             background-color: #555 !important;
@@ -67,17 +56,12 @@ def set_background(image_file):
             width: 100% !important;
         }}
         @media (max-width: 768px) {{
-            .login-card {{
-                margin: 30px auto;
-                padding: 20px 15px;
-                max-width: 95%;
-            }}
             .stTextInput > div > div > input {{
                 font-size: 16px !important;
             }}
             .stButton > button {{
                 font-size: 16px !important;
-                padding: 0.9rem !important;
+                padding: 1rem !important;
             }}
         }}
         </style>
@@ -89,12 +73,17 @@ set_background("Background.jpg")
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-    # Centered login card
-    st.markdown("<div class='login-card'>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align:center; margin-bottom:20px;'>Welcome Back!</h2>", unsafe_allow_html=True)
+    # Centered Welcome text (smaller)
+    st.markdown(
+        "<h2 style='text-align:center; margin-top:80px; font-weight:bold;'>Welcome Back!</h2>",
+        unsafe_allow_html=True
+    )
 
-    user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
-
+    st.markdown("<div style='margin-top:30px;'>", unsafe_allow_html=True)
+    
+    # Phone number input
+    user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10, key="phone_input")
+    
     if not st.session_state.otp_sent:
         if st.button("Send OTP", key="send_otp_btn"):
             if not user_input.isdigit() or len(user_input) != 10:
@@ -111,16 +100,13 @@ if not st.session_state.authenticated:
                         st.success("✅ OTP sent successfully!")
                         st.rerun()
                     else:
-                        try:
-                            st.error(f"❌ Failed: {response.json()}")
-                        except Exception:
-                            st.error(f"❌ Failed: {response.text}")
+                        st.error(f"❌ Failed: {response.text}")
                 except requests.exceptions.RequestException as e:
                     st.error(f"Error connecting to backend: {e}")
     else:
         st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
-        otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6)
-
+        otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6, key="otp_input")
+        
         col1, col2 = st.columns([3, 1])
         with col1:
             if st.button("Verify & Sign In", key="verify_otp_btn"):
@@ -136,11 +122,7 @@ if not st.session_state.authenticated:
                             }
                         )
                         if response.status_code == 200:
-                            json_resp = {}
-                            try:
-                                json_resp = response.json()
-                            except Exception:
-                                pass
+                            json_resp = response.json()
                             verified = json_resp.get("verified", True)
                             if verified:
                                 st.session_state.authenticated = True
@@ -149,19 +131,16 @@ if not st.session_state.authenticated:
                             else:
                                 st.error("❌ Invalid OTP.")
                         else:
-                            try:
-                                st.error(f"❌ Failed: {response.json()}")
-                            except Exception:
-                                st.error(f"❌ Failed: {response.text}")
+                            st.error(f"❌ Failed: {response.text}")
                     except requests.exceptions.RequestException as e:
                         st.error(f"Error connecting to backend: {e}")
-
+        
         with col2:
-            if st.button("↩️", key="back_btn", help="Go back"):
+            if st.button("↩️", key="back_btn"):
                 st.session_state.otp_sent = False
                 st.session_state.user_identifier = ""
                 st.rerun()
-
+    
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
@@ -174,7 +153,7 @@ st.markdown(
 # ✅ Sidebar Navigation
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
 
-# ====== Home Page ======
+# Page: Home
 if page == "Home":
     st.subheader("Submit Your Proverb")
     with st.form("submit_form"):
@@ -212,7 +191,7 @@ if page == "Home":
         else:
             st.warning("Please enter a proverb to translate.")
 
-# ====== Proverb of the Day ======
+# Page: Proverb of the Day
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the Day")
     try:
@@ -225,7 +204,10 @@ elif page == "Proverb of the day":
         translated = translate.translate_text(selected, "English")
         st.markdown(
             f"""
-            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: black;'>{selected}<br>➡️ {translated}</div>
+            <div style='text-align: center; margin-top: 20px; font-size: 18px; color: black;'>
+                <p><b>✨ Original:</b> {selected}</p>
+                <p><b>➡️ Translated:</b> {translated}</p>
+            </div>
             """,
             unsafe_allow_html=True
         )
@@ -234,7 +216,7 @@ elif page == "Proverb of the day":
     if st.button("🔄 Next Proverb"):
         st.rerun()
 
-# ====== States Page ======
+# Page: States
 elif page == "States":
     st.subheader("📊 Proverbs Stats")
     stats = core.load_stats()
@@ -260,6 +242,7 @@ elif page == "States":
         plt.tight_layout()
         st.pyplot(fig)
         
+        # Also show as list
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
