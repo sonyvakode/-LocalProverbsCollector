@@ -29,34 +29,150 @@ def set_background(image_file):
         f"""
         <style>
         .stApp {{
-            background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
-                        url("data:image/jpg;base64,{encoded}");
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             background-size: cover;
             background-position: center;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }}
-        .card {{
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        
+        .main-container {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }}
+        
+        .auth-card {{
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 3rem 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             margin: auto;
-            max-width: 420px;
+            max-width: 450px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.2);
         }}
-        h2 {{
+        
+        .app-title {{
             text-align: center;
-            margin-bottom: 1rem;
-            color: #333;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }}
+        
+        .app-subtitle {{
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }}
+        
+        .form-title {{
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #2d3748;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }}
+        
+        .stTextInput > div > div > input {{
+            border-radius: 12px !important;
+            border: 2px solid #e2e8f0 !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease !important;
+        }}
+        
+        .stTextInput > div > div > input:focus {{
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        }}
+        
+        .stButton > button {{
+            background: linear-gradient(135deg, #667eea, #764ba2) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 2rem !important;
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            width: 100% !important;
+            transition: all 0.3s ease !important;
+        }}
+        
+        .stButton > button:hover {{
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3) !important;
+        }}
+        
         .switch-links {{
             text-align: center;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
         }}
+        
         .switch-links a {{
-            color: #0073e6;
+            color: #667eea;
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }}
+        
+        .switch-links a:hover {{
+            color: #764ba2;
+        }}
+        
+        .success-message {{
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 1rem 0;
+        }}
+        
+        .error-message {{
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 1rem 0;
+        }}
+        
+        .input-label {{
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }}
+        
+        /* Hide default streamlit styling */
+        .stTextInput > label {{
+            font-weight: 600 !important;
+            color: #2d3748 !important;
+            font-size: 0.95rem !important;
+        }}
+        
+        /* Responsive design */
+        @media (max-width: 768px) {{
+            .auth-card {{
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }}
+            .app-title {{
+                font-size: 1.75rem;
+            }}
         }}
         </style>
         """,
@@ -68,37 +184,47 @@ set_background("Background.jpg")
 # ========== Authentication ==========
 if not st.session_state.authenticated:
 
-    with st.container():
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+    st.markdown("<div class='auth-card'>", unsafe_allow_html=True)
+    
+    # App branding
+    st.markdown("<div class='app-title'>📜 Indian Wisdom</div>", unsafe_allow_html=True)
+    st.markdown("<div class='app-subtitle'>Preserving Local Proverbs & Cultural Heritage</div>", unsafe_allow_html=True)
 
-        if st.session_state.auth_mode == "login":
-            st.markdown("<h2>Sign In</h2>", unsafe_allow_html=True)
+    if st.session_state.auth_mode == "login":
+        st.markdown("<div class='form-title'>Welcome Back!</div>", unsafe_allow_html=True)
 
-            user_input = st.text_input("📱 Enter your Phone Number", max_chars=10)
-            if not st.session_state.otp_sent:
-                if st.button("Send OTP"):
-                    if not user_input.isdigit() or len(user_input) != 10:
-                        st.error("⚠️ Please enter a valid 10-digit phone number.")
-                    else:
-                        try:
-                            response = requests.post(
-                                f"{API_BASE_URL}/login/send-otp",
-                                json={"phone_number": user_input}
-                            )
-                            if response.status_code == 200:
-                                st.session_state.otp_sent = True
-                                st.session_state.user_identifier = user_input
-                                st.success("✅ OTP sent successfully!")
-                            else:
-                                try:
-                                    st.error(f"❌ Failed: {response.json()}")
-                                except Exception:
-                                    st.error(f"❌ Failed: {response.text}")
-                        except requests.exceptions.RequestException as e:
-                            st.error(f"Error connecting to backend: {e}")
-            else:
-                otp = st.text_input("Enter OTP", type="password", max_chars=6)
-                if st.button("Verify OTP"):
+        user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
+        
+        if not st.session_state.otp_sent:
+            if st.button("Send OTP", key="send_otp_btn"):
+                if not user_input.isdigit() or len(user_input) != 10:
+                    st.error("⚠️ Please enter a valid 10-digit phone number.")
+                else:
+                    try:
+                        response = requests.post(
+                            f"{API_BASE_URL}/login/send-otp",
+                            json={"phone_number": user_input}
+                        )
+                        if response.status_code == 200:
+                            st.session_state.otp_sent = True
+                            st.session_state.user_identifier = user_input
+                            st.success("✅ OTP sent successfully!")
+                            st.rerun()
+                        else:
+                            try:
+                                st.error(f"❌ Failed: {response.json()}")
+                            except Exception:
+                                st.error(f"❌ Failed: {response.text}")
+                    except requests.exceptions.RequestException as e:
+                        st.error(f"Error connecting to backend: {e}")
+        else:
+            st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
+            otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6)
+            
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if st.button("Verify & Sign In", key="verify_otp_btn"):
                     if not otp or len(otp) < 4:
                         st.error("⚠️ Please enter the 6-digit OTP you received.")
                     else:
@@ -130,61 +256,81 @@ if not st.session_state.authenticated:
                                     st.error(f"❌ Failed: {response.text}")
                         except requests.exceptions.RequestException as e:
                             st.error(f"Error connecting to backend: {e}")
+            
+            with col2:
+                if st.button("↩️", key="back_btn", help="Go back"):
+                    st.session_state.otp_sent = False
+                    st.session_state.user_identifier = ""
+                    st.rerun()
 
-            st.markdown(
-                """<div class="switch-links">
-                    <a onClick="window.location.reload()">Sign Up</a> | 
-                    <a onClick="window.location.reload()">Forgot Password?</a>
-                </div>""",
-                unsafe_allow_html=True,
-            )
+        st.markdown(
+            """<div class="switch-links">
+                Don't have an account? <a onclick="window.location.reload()">Sign Up</a><br>
+                <a onclick="window.location.reload()">Forgot Password?</a>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
-        elif st.session_state.auth_mode == "signup":
-            st.markdown("<h2>Sign Up</h2>", unsafe_allow_html=True)
-            phone = st.text_input("📱 Phone Number")
-            password = st.text_input("🔑 Password", type="password")
-            if st.button("Register"):
-                try:
-                    response = requests.post(
-                        f"{API_BASE_URL}/signup/send-otp",
-                        json={"phone_number": phone, "password": password}
-                    )
-                    if response.status_code == 200:
-                        st.success("✅ Sign-up successful! Verify OTP sent.")
-                        st.session_state.auth_mode = "login"
-                        st.rerun()
-                    else:
-                        try:
-                            st.error(f"❌ Failed: {response.json()}")
-                        except Exception:
-                            st.error(f"❌ Failed: {response.text}")
-                except requests.exceptions.RequestException as e:
-                    st.error(f"Error connecting to backend: {e}")
+    elif st.session_state.auth_mode == "signup":
+        st.markdown("<div class='form-title'>Create Account</div>", unsafe_allow_html=True)
+        phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
+        password = st.text_input("🔑 Create Password", type="password", placeholder="Create a secure password")
+        if st.button("Create Account", key="signup_btn"):
+            try:
+                response = requests.post(
+                    f"{API_BASE_URL}/signup/send-otp",
+                    json={"phone_number": phone, "password": password}
+                )
+                if response.status_code == 200:
+                    st.success("✅ Sign-up successful! Verify OTP sent.")
+                    st.session_state.auth_mode = "login"
+                    st.rerun()
+                else:
+                    try:
+                        st.error(f"❌ Failed: {response.json()}")
+                    except Exception:
+                        st.error(f"❌ Failed: {response.text}")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error connecting to backend: {e}")
+        
+        st.markdown(
+            """<div class="switch-links">
+                Already have an account? <a onclick="window.location.reload()">Sign In</a>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
-        elif st.session_state.auth_mode == "reset_password":
-            st.markdown("<h2>Reset Password</h2>", unsafe_allow_html=True)
-            phone = st.text_input("📱 Phone Number")
-            new_pass = st.text_input("🔑 New Password", type="password")
-            if st.button("Reset Password"):
-                try:
-                    response = requests.post(
-                        f"{API_BASE_URL}/reset-password",
-                        json={"phone_number": phone, "new_password": new_pass}
-                    )
-                    if response.status_code == 200:
-                        st.success("✅ Password reset successfully!")
-                        st.session_state.auth_mode = "login"
-                        st.rerun()
-                    else:
-                        try:
-                            st.error(f"❌ Failed: {response.json()}")
-                        except Exception:
-                            st.error(f"❌ Failed: {response.text}")
-                except requests.exceptions.RequestException as e:
-                    st.error(f"Error connecting to backend: {e}")
+    elif st.session_state.auth_mode == "reset_password":
+        st.markdown("<div class='form-title'>Reset Password</div>", unsafe_allow_html=True)
+        phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
+        new_pass = st.text_input("🔑 New Password", type="password", placeholder="Enter new password")
+        if st.button("Reset Password", key="reset_btn"):
+            try:
+                response = requests.post(
+                    f"{API_BASE_URL}/reset-password",
+                    json={"phone_number": phone, "new_password": new_pass}
+                )
+                if response.status_code == 200:
+                    st.success("✅ Password reset successfully!")
+                    st.session_state.auth_mode = "login"
+                    st.rerun()
+                else:
+                    try:
+                        st.error(f"❌ Failed: {response.json()}")
+                    except Exception:
+                        st.error(f"❌ Failed: {response.text}")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error connecting to backend: {e}")
+        
+        st.markdown(
+            """<div class="switch-links">
+                Remember your password? <a onclick="window.location.reload()">Sign In</a>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
-        st.markdown("</div>", unsafe_allow_html=True)
-
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # ========== MAIN APP ==========
@@ -219,17 +365,7 @@ if page == "Home":
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
 
-                # --- Show translation after submission ---
-                try:
-                    translated = translate.translate_text(proverb, "English")
-                    st.markdown(f"<div style='text-align: center; margin-top: 15px;'>"
-                                f"<b>Original:</b> {proverb}<br>"
-                                f"<b>Translated:</b> {translated}"
-                                f"</div>", unsafe_allow_html=True)
-                except Exception as e:
-                    st.warning(f"⚠️ Translation failed: {e}")
-            else:
-                st.error("❌ Provide both proverb and city.")
+         
 
     # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
@@ -289,5 +425,3 @@ elif page == "States":
             st.write(f"{i}. {region}: {count} proverbs")
     else:
         st.info("No data yet.")
-
-
