@@ -1,83 +1,215 @@
 import streamlit as st
 import random
+import base64
+import requests
+from utils import core, translate, vote, audio, language
 
 # Page setup
-st.set_page_config(page_title="Auth System", page_icon="🔑", layout="centered")
+st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# In-memory OTP storage (for demo purpose)
-otp_storage = {}
+# ========== 🔒 Authentication with OTP ==========
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "otp_sent" not in st.session_state:
+    st.session_state.otp_sent = False
+if "user_identifier" not in st.session_state:
+    st.session_state.user_identifier = ""
 
-# Dark theme styling
-st.markdown("""
-    <style>
-    body {
-        background-color: #0E1117;
-        color: white;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        justify-content: center;
-    }
-    .stTextInput>div>div>input {
-        background-color: #1E222A;
-        color: white;
-    }
-    .stPasswordInput>div>div>input {
-        background-color: #1E222A;
-        color: white;
-    }
-    .stSelectbox>div>div>select {
-        background-color: #1E222A;
-        color: white;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# ✅ Centralized API base URL (update this once)
+API_BASE_URL = "https://your-api-domain.com"   # <-- change this to your server URL
 
-# Tabs: Sign In / Sign Up
-tab1, tab2 = st.tabs(["🔑 Sign In", "📝 Sign Up"])
+if not st.session_state.authenticated:
+    st.markdown("<h2 style='text-align: center;'>🔒 Sign In with OTP</h2>", unsafe_allow_html=True)
 
-with tab1:
-    st.title("Sign In")
+    with st.container():
+        if not st.session_state.otp_sent:
+            user_input = st.text_input("Enter your Email or Phone", key="signin_user")
+            if st.button("Send OTP", key="signin_send_otp"):
+                try:
+                    response = requests.post(
+                        f"{API_BASE_URL}/send-otp",
+                        json={"user": user_input}
+                    )
+                    if response.status_code == 200:
+                        st.session_state.otp_sent = True
+                        st.session_state.user_identifier = user_input
+                        st.success("✅ OTP sent successfully!")
+                    else:
+                        st.error(f"❌ Failed to send OTP: {response.text}")
+                except Exception as e:
+                    st.error(f"Error sending OTP: {e}")
 
-    auth_method = st.radio("Choose login method:", ["Password", "OTP"], horizontal=True)
-
-    phone = st.text_input("Phone Number", placeholder="Enter your phone number")
-
-    if auth_method == "Password":
-        password = st.text_input("Password", type="password", placeholder="Enter your password")
-        if st.button("Sign In"):
-            if phone and password:
-                st.success(f"✅ Signed in with phone {phone}")
-            else:
-                st.error("⚠️ Please fill in all fields.")
-    else:
-        if st.button("Send OTP"):
-            if phone:
-                otp = str(random.randint(100000, 999999))
-                otp_storage[phone] = otp
-                st.info(f"📩 OTP sent to {phone} (Demo: {otp})")  # For demo, showing OTP
-            else:
-                st.error("⚠️ Please enter phone number.")
-
-        otp = st.text_input("Enter OTP", placeholder="Enter OTP here")
-        if st.button("Verify OTP"):
-            if phone in otp_storage and otp_storage[phone] == otp:
-                st.success("✅ OTP verified, signed in!")
-                del otp_storage[phone]
-            else:
-                st.error("❌ Invalid OTP.")
-
-with tab2:
-    st.title("Sign Up")
-
-    new_phone = st.text_input("Phone Number", placeholder="Enter your phone number")
-    new_password = st.text_input("Password", type="password", placeholder="Create a password")
-    confirm_password = st.text_input("Confirm Password", type="password", placeholder="Re-enter password")
-
-    if st.button("Register"):
-        if new_phone and new_password and confirm_password:
-            if new_password == confirm_password:
-                st.success(f"🎉 Account created for {new_phone}")
-            else:
-                st.error("⚠️ Passwords do not match.")
         else:
-            st.error("⚠️ Please fill in all fields.")
+            otp = st.text_input("Enter OTP", type="password", key="signin_otp")
+            if st.button("Verify OTP", key="signin_verify_otp"):
+                try:
+                    response = requests.post(
+                        f"{API_BASE_URL}/verify-otp",
+                        json={"user": st.session_state.user_identifier, "otp": otp}
+                    )
+                    if response.status_code == 200 and response.json().get("verified"):
+                        st.session_state.authenticated = True
+                        st.success("🎉 Login successful!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid OTP. Try again.")
+                except Exception as e:
+                    st.error(f"Error verifying OTP: {e}")
+
+    st.stop()  # Prevent app from loading if not authenticated
+
+# ========== Background ==========
+def set_background(image_file):
+    with open(image_file, "rb") as file:
+        encoded = base64.b64encode(file.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        html, body, [class*="css"] {{
+            color: #111 !important;
+        }}
+        .stApp {{
+            background: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), 
+                        url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+        }}
+        textarea, input, select {{
+            background-color: #fff !important;
+            color: #000 !important;
+            border: 1px solid #ccc !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+        }}
+        label {{
+            color: #111 !important;
+            font-weight: 500 !important;
+        }}
+        .solid-box {{
+            background-color: #ffffffcc;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_background("Background.jpg")
+
+# Title
+st.markdown(
+    "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
+    unsafe_allow_html=True
+)
+
+# Sidebar Navigation
+page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"], key="nav_select")
+
+# Page: Home
+if page == "Home":
+    st.markdown("<h3 style='color: black;'>Submit Your Proverb</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #444;'>Contribute local wisdom from your region, in your language or dialect. Help preserve India’s cultural voice.</p>", unsafe_allow_html=True)
+
+    with st.form("submit_form"):
+        proverb = st.text_area("Enter a local proverb", key="proverb_input")
+        meaning = st.text_area("Write the meaning of the proverb", key="meaning_input")
+        city = st.selectbox(
+            "Name of the City or Region", 
+            ["Select", "Hyderabad", "Mumbai", "Chennai", "Bangalore", "Kolkata", "Delhi", "Other"],
+            key="city_select"
+        )
+        lang = st.selectbox("Language of the proverb", language.get_all_languages(), key="lang_submit")
+        audio_file = st.file_uploader("Upload Audio", type=["wav", "mp3", "m4a"], key="audio_upload")
+        submitted = st.form_submit_button("Submit")
+        if submitted:
+            if audio_file:
+                proverb_from_audio = audio.transcribe_audio(audio_file)
+                st.write("Transcribed:", proverb_from_audio)
+                proverb = proverb or proverb_from_audio
+            if proverb and city != "Select":
+                core.save_proverb(proverb, city, lang, meaning=meaning)
+
+                # ✅ Save to data/proverbs.txt
+                try:
+                    with open("data/proverbs.txt", "a", encoding="utf-8") as f:
+                        f.write(f"{proverb.strip()} - {meaning.strip()}\n")
+                except Exception as e:
+                    st.error(f"⚠️ Failed to save to proverb.txt: {e}")
+
+                st.success("✅ Proverb saved successfully!")
+            else:
+                st.error("❌ Please provide both proverb and city/region.")
+
+    st.markdown("<h3 style='color: black;'>🌍 Translate a Proverb</h3>", unsafe_allow_html=True)
+    to_translate = st.text_input("Enter proverb to translate", key="translate_input")
+    target_lang = st.selectbox("Choose target language", language.get_all_languages(), key="translate_lang")
+    if st.button("Translate", key="translate_button"):
+        if to_translate:
+            translated = translate.translate_text(to_translate, target_lang)
+            st.success(f"Translated: {translated}")
+        else:
+            st.warning("Enter a proverb to translate.")
+
+# ========== Proverb of the Day Page ==========
+elif page == "Proverb of the day":
+    st.subheader("📝 Proverb of the day")
+
+    try:
+        with open("data/proverbs.txt", "r", encoding="utf-8") as f:
+            all_proverbs = [line.strip() for line in f if line.strip()]
+    except FileNotFoundError:
+        all_proverbs = []
+
+    if all_proverbs:
+        selected_proverb = random.choice(all_proverbs)
+        display_lang = "English"
+        translated = translate.translate_text(selected_proverb, display_lang)
+
+        st.markdown(f"""
+            <div style='
+                background-color: #ffffff;
+                padding: 24px;
+                border-radius: 10px;
+                margin: 30px auto 20px;
+                font-size: 18px;
+                color: #111;
+                width: 90%;
+                max-width: 700px;
+                text-align: center;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            '>
+                <div><strong>Original:</strong> {selected_proverb}</div>
+                <div style='margin-top: 12px;'><strong>Translated:</strong> {translated}</div>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.warning("No proverbs available in the file yet.")
+
+    st.markdown("<div style='margin-top: 25px; text-align: center;'>", unsafe_allow_html=True)
+    if st.button("🔄 Next Proverb", key="next_proverb"):
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Page: States
+elif page == "States":
+    st.markdown("<h3 style='color: black;'>📊 Proverbs Stats</h3>", unsafe_allow_html=True)
+    stats = core.load_stats()
+    st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
+
+    st.markdown("<h4 style='color: black;'>🏆 Leaderboard</h4>", unsafe_allow_html=True)
+    all = vote.get_all()
+    region_counts = {}
+    for item in all:
+        region = item.get("city", "Unknown")
+        region_counts[region] = region_counts.get(region, 0) + 1
+
+    sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
+
+    if sorted_regions:
+        for i, (region, count) in enumerate(sorted_regions[:10], start=1):
+            st.write(f"{i}. {region}: {count} proverbs")
+    else:
+        st.info("Leaderboard data not available yet.")
