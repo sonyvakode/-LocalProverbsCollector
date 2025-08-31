@@ -17,9 +17,9 @@ if "otp_sent" not in st.session_state:
 if "user_identifier" not in st.session_state:
     st.session_state.user_identifier = ""
 if "auth_mode" not in st.session_state:
-    st.session_state.auth_mode = "login"   # login | signup | reset_password | change_password
+    st.session_state.auth_mode = "login"
 
-# ✅ Centralized API base URL
+# ✅ API URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
 # ========== Background ==========
@@ -45,6 +45,7 @@ def set_background(image_file):
             padding: 0.75rem !important;
             color: black !important;
             font-weight: bold !important;
+            background-color: white !important;
         }}
         .stButton > button {{
             background-color: #555 !important;
@@ -73,13 +74,12 @@ set_background("Background.jpg")
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-    # Centered Welcome text (smaller)
     st.markdown(
         "<h2 style='text-align:center; margin-top:80px; font-weight:bold;'>Welcome Back!</h2>",
         unsafe_allow_html=True
     )
 
-    st.markdown("<div style='margin-top:30px;'>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:20px;'>", unsafe_allow_html=True)
     
     # Phone number input
     user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10, key="phone_input")
@@ -242,7 +242,6 @@ elif page == "States":
         plt.tight_layout()
         st.pyplot(fig)
         
-        # Also show as list
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
