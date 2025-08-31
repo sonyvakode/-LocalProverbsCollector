@@ -187,7 +187,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ✅ Sidebar Navigation (added contributors + contributing)
+# ✅ Sidebar Navigation
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States", "Contributors", "Contributing Guide"])
 
 # Page: Home
@@ -294,7 +294,39 @@ elif page == "Contributors":
     st.subheader("👥 Contributors")
     try:
         with open("CONTRIBUTORS.md", "r", encoding="utf-8") as f:
-            st.markdown(f.read())
+            lines = [line.strip() for line in f if line.strip()]
+        
+        if not lines:
+            st.warning("No contributors found in CONTRIBUTORS.md.")
+        else:
+            # Count contributors
+            st.info(f"Total Contributors: {len(lines)}")
+            
+            # Display contributor list and their contributions
+            for i, line in enumerate(lines, start=1):
+                if '-' in line:
+                    name, contribution = map(str.strip, line.split('-', 1))
+                    st.markdown(f"**{i}. {name}**: {contribution}")
+                else:
+                    st.markdown(f"**{i}. {line}**: Contribution details not specified")
+
+            # Submit to Swacha
+            if st.button("Submit Contributors to Swacha"):
+                try:
+                    payload = [{"name": line.split('-')[0].strip(), 
+                                "contribution": line.split('-')[1].strip() if '-' in line else ""} 
+                               for line in lines]
+                    response = requests.post(
+                        "https://api.corpus.swecha.org/api/v1/contributors", 
+                        json={"contributors": payload}
+                    )
+                    if response.status_code == 200:
+                        st.success("✅ Contributors submitted successfully to Swacha!")
+                    else:
+                        st.error(f"❌ Failed to submit: {response.text}")
+                except Exception as e:
+                    st.error(f"⚠️ Error submitting contributors: {e}")
+
     except FileNotFoundError:
         st.warning("No CONTRIBUTORS.md file found.")
 
