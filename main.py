@@ -10,7 +10,6 @@ st.set_page_config(page_title="Indian Wisdom", layout="centered")
 # ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
-
 if "otp_sent" not in st.session_state:
     st.session_state.otp_sent = False
 if "user_identifier" not in st.session_state:
@@ -21,7 +20,7 @@ if "auth_mode" not in st.session_state:
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# ========== Background ==========
+# ========== Background (UNCHANGED, AS REQUESTED) ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
@@ -63,18 +62,90 @@ def set_background(image_file):
         """,
         unsafe_allow_html=True
     )
-
 set_background("Background.jpg")
+
+# ========== EXTRA CSS for CARD/FIELDS ==========
+st.markdown("""
+<style>
+.card {
+    background: #fff !important;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px 0 rgba(25, 62, 152, 0.10);
+    max-width: 380px;
+    margin: 54px auto;
+    display: flex;
+    flex-direction: column;
+    padding: 38px 30px 32px 30px;
+}
+.form-title {
+    font-weight: 700;
+    font-size: 2.0rem;
+    text-align: center;
+    color: #111;
+    margin-bottom: 1.13rem;
+}
+.stTextInput > div > div > input,
+input[type="text"], input[type="password"], input[type="email"] {
+    border-radius: 10px !important;
+    border: 1.5px solid #e0e6ef !important;
+    background: #f6f8fa !important;
+    padding: 0.87rem 1.1rem !important;
+    font-size: 1.06rem !important;
+    color: #162447 !important;
+    margin-bottom: 1.00rem !important;
+}
+.stButton > button {
+    border-radius: 10px !important;
+    padding: 0.84rem 0 !important;
+    width: 100% !important;
+    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%) !important;
+    color: #fff !important;
+    font-size: 1.09rem !important;
+    font-weight: 700 !important;
+    border: none !important;
+    margin-top: 0.2rem !important;
+    margin-bottom: 0.65rem !important;
+    box-shadow: 0 2px 20px 0 rgba(25, 62, 152, 0.09);
+    transition: background 0.2s;
+}
+.switch-links {
+    text-align: center;
+    margin-top: 13px;
+    font-size: 0.98rem;
+}
+.switch-links a {
+    color: #307aff;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+.forgot-link {
+    font-size: 0.97rem;
+    color: #307aff;
+    text-decoration: none;
+    margin-bottom: 1.0rem;
+    margin-top: -0.8rem;
+    display: inline-block;
+    cursor: pointer;
+    font-weight: 500;
+}
+@media (max-width: 600px) {
+    .card {
+        width: 99vw;
+        min-width: 0;
+        padding: 20px 4vw 17px 4vw;
+        margin-top: 6vw;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-
     with st.container():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-
     if st.session_state.auth_mode == "login":
         st.markdown("<div class='form-title'>Welcome Back!</div>", unsafe_allow_html=True)
-
         user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
         
         if not st.session_state.otp_sent:
@@ -143,15 +214,13 @@ if not st.session_state.authenticated:
                     st.session_state.otp_sent = False
                     st.session_state.user_identifier = ""
                     st.rerun()
-
         st.markdown(
             """<div class="switch-links">
                 Don't have an account? <a onclick="window.location.reload()">Sign Up</a><br>
-                <a onclick="window.location.reload()">Forgot Password?</a>
+                <a class="forgot-link" onclick="window.location.reload()">Forgot Password?</a>
             </div>""",
             unsafe_allow_html=True,
         )
-
     elif st.session_state.auth_mode == "signup":
         st.markdown("<div class='form-title'>Create Account</div>", unsafe_allow_html=True)
         phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
@@ -180,7 +249,6 @@ if not st.session_state.authenticated:
             </div>""",
             unsafe_allow_html=True,
         )
-
     elif st.session_state.auth_mode == "reset_password":
         st.markdown("<div class='form-title'>Reset Password</div>", unsafe_allow_html=True)
         phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
@@ -209,7 +277,6 @@ if not st.session_state.authenticated:
             </div>""",
             unsafe_allow_html=True,
         )
-
         st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
@@ -218,10 +285,8 @@ st.markdown(
     "<h1 style='text-align: center; color: black;'>📜 Indian Wisdom: Local Proverbs Collector</h1>",
     unsafe_allow_html=True
 )
-
 # ✅ Sidebar Navigation (Removed Translate)
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
-
 # Page: Home
 if page == "Home":
     st.subheader("Submit Your Proverb")
@@ -244,7 +309,6 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
-
     # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
     st.subheader("🌍 Translate a Proverb")
@@ -259,7 +323,6 @@ if page == "Home":
                 st.error(f"⚠️ Translation failed: {e}")
         else:
             st.warning("Please enter a proverb to translate.")
-
 # Page: Proverb of the Day
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the Day")
@@ -284,13 +347,11 @@ elif page == "Proverb of the day":
         st.warning("No proverbs available.")
     if st.button("🔄 Next Proverb"):
         st.rerun()
-
 # Page: States
 elif page == "States":
     st.subheader("📊 Proverbs Stats")
     stats = core.load_stats()
     st.write(f"Total Proverbs Collected: {stats.get('total_proverbs', 0)}")
-
     st.markdown("#### 🏆 Leaderboard")
     all_data = vote.get_all()
     region_counts = {}
@@ -298,13 +359,11 @@ elif page == "States":
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
     sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
-    
     if sorted_regions:
         # Show as graph
         import matplotlib.pyplot as plt
         regions = [item[0] for item in sorted_regions[:10]]
         counts = [item[1] for item in sorted_regions[:10]]
-        
         fig, ax = plt.subplots(figsize=(10, 6))
         bars = ax.bar(regions, counts, color='#0073e6')
         ax.set_xlabel('Regions')
@@ -313,7 +372,6 @@ elif page == "States":
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
         st.pyplot(fig)
-        
         # Also show as list
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
