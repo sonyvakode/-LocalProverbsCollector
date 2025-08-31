@@ -6,7 +6,24 @@ from utils import core, translate, vote, audio, language
 # Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
-# Light background setup
+# ========== 🔒 Authentication First ==========
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("🔒 Sign In Required")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        # Simple static login (replace with OTP/DB as needed)
+        if username == "admin" and password == "1234":
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Invalid credentials. Try again.")
+    st.stop()   # Prevent rest of the app from running
+
+# ========== Background ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
