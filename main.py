@@ -4,7 +4,7 @@ import base64
 import requests
 from utils import core, translate, vote, audio, language
 
-# ========== Page setup ==========
+# Page setup
 st.set_page_config(page_title="Indian Wisdom", layout="centered")
 
 # ========== Session State ==========
@@ -20,126 +20,19 @@ if "auth_mode" not in st.session_state:
 # ✅ Centralized API base URL
 API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
 
-# ========== Background and Login UI Styling ==========
+# ========== Background (UNCHANGED) ==========
 def set_background(image_file):
     with open(image_file, "rb") as file:
         encoded = base64.b64encode(file.read()).decode()
     st.markdown(
         f"""
         <style>
-        body {{
-            background: none !important;
-        }}
         .stApp {{
-            background: radial-gradient(circle at 65% 36%, #176DF7 0%, #1556C1 100%) !important;
-            min-height: 100vh !important;
-            font-family: 'Segoe UI', Arial, sans-serif !important;
-        }}
-        .centered-container {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 98vh;
-            justify-content: center;
-        }}
-        .login-card {{
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 8px 40px 0 rgba(25, 62, 152, 0.08);
-            width: 370px;
-            max-width: 96vw;
-            padding: 38px 32px 30px 32px;
-            margin: 44px auto;
-            display: flex;
-            flex-direction: column;
-        }}
-        .login-title, .form-title {{
-            font-weight: 700;
-            font-size: 2.1rem;
-            text-align: center;
-            color: #111;
-            margin-bottom: 1.25rem;
-        }}
-        .tab-group, .auth-methods {{
-            display: flex;
-            gap: 0;
-            margin-bottom: 1.55rem;
-            margin-top: 0.5rem;
-            width: 100%;
-        }}
-        .tab-btn, .method-btn {{
-            flex: 1;
-            padding: 0.7rem 0;
-            border-radius: 9px 9px 9px 9px;
-            border: none;
-            background: #eee;
-            font-size: 1.09rem;
-            color: #193E98;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-            outline: none;
-        }}
-        .tab-btn.active, .method-btn.active {{
-            background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%);
-            color: #fff;
-        }}
-        .stTextInput > div > div > input, input[type="text"], input[type="password"], input[type="email"] {{
-            border-radius: 10px !important;
-            border: 1.5px solid #e0e6ef !important;
-            background: #f4f7fa !important;
-            padding: 0.90rem 1.05rem !important;
-            font-size: 1.09rem !important;
-            color: #162447 !important;
-            margin-bottom: 1.1rem !important;
-        }}
-        .stTextInput label {{
-            font-size: 1.08rem !important;
-            font-weight: 500 !important;
-            margin-bottom: 0.46rem !important;
-        }}
-        .stButton > button {{
-            border-radius: 10px !important;
-            padding: 0.89rem 0 !important;
-            width: 100% !important;
-            background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%) !important;
-            color: #fff !important;
-            font-size: 1.14rem !important;
-            font-weight: 700 !important;
-            border: none !important;
-            margin-top: 0.45rem !important;
-            margin-bottom: 0.8rem !important;
-            box-shadow: 0 2px 20px 0 rgba(25, 62, 152, 0.09);
-            transition: background 0.2s;
-        }}
-        .forgot-link {{
-            font-size: 0.99rem;
-            color: #307aff;
-            text-decoration: none;
-            margin-bottom: 1.4rem;
-            margin-top: -0.9rem;
-            display: inline-block;
-            cursor: pointer;
-            font-weight: 500;
-        }}
-        .switch-links {{
-            text-align: center;
-            margin-top: 17px;
-            font-size: 1.02rem;
-        }}
-        .switch-links a {{
-            color: #307aff;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-        }}
-        @media (max-width: 600px) {{
-            .login-card {{
-                width: 99vw;
-                min-width: 0;
-                padding: 24px 4vw 22px 4vw;
-                margin-top: 10vw;
-            }}
+            background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)),
+                        url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-position: center;
+            font-family: 'Segoe UI', sans-serif;
         }}
         </style>
         """,
@@ -147,10 +40,107 @@ def set_background(image_file):
     )
 set_background("Background.jpg")
 
+# ========== ADDITIONAL LOGIN CARD STYLES ==========
+st.markdown("""
+<style>
+.login-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px 0 rgba(25, 62, 152, 0.10);
+    max-width: 380px;
+    padding: 39px 32px 25px 32px;
+    margin: 54px auto;
+    display: flex;
+    flex-direction: column;
+}
+.login-title {
+    font-weight: 700;
+    font-size: 2.1rem;
+    text-align: center;
+    color: #111;
+    margin-bottom: 1.10rem;
+}
+.tab-group {
+    display: flex;
+    width: 100%;
+    margin-bottom: 1.2rem;
+}
+.tab-btn {
+    flex: 1;
+    padding: 0.6rem 0;
+    border-radius: 10px 10px 10px 10px;
+    border: none;
+    background: #eee;
+    font-size: 1.07rem;
+    color: #193E98;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.17s, color 0.15s;
+    outline: none;
+}
+.tab-btn.active {
+    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%);
+    color: #fff;
+}
+.stTextInput > div > div > input, input[type="text"], input[type="password"], input[type="email"] {
+    border-radius: 10px !important;
+    border: 1.5px solid #e0e6ef !important;
+    background: #f4f7fa !important;
+    padding: 0.87rem 1.1rem !important;
+    font-size: 1.07rem !important;
+    color: #162447 !important;
+    margin-bottom: 1.05rem !important;
+}
+.stButton > button {
+    border-radius: 10px !important;
+    padding: 0.84rem 0 !important;
+    width: 100% !important;
+    background: linear-gradient(90deg, #1948CB 60%, #176DF7 100%) !important;
+    color: #fff !important;
+    font-size: 1.13rem !important;
+    font-weight: 700 !important;
+    border: none !important;
+    margin-top: 0.35rem !important;
+    box-shadow: 0 2px 20px 0 rgba(25, 62, 152, 0.09);
+    transition: background 0.2s;
+}
+.forgot-link {
+    font-size: 0.97rem;
+    color: #307aff;
+    text-decoration: none;
+    margin-bottom: 1.2rem;
+    margin-top: -0.8rem;
+    display: inline-block;
+    cursor: pointer;
+    font-weight: 500;
+}
+.switch-links {
+    text-align: center;
+    margin-top: 13px;
+    font-size: 0.98rem;
+}
+.switch-links a {
+    color: #307aff;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+@media (max-width: 600px) {
+    .login-card {
+        width: 96vw;
+        min-width: 0;
+        padding: 21px 3vw 12px 3vw;
+        margin-top: 6vw;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ========== Authentication ==========
 if not st.session_state.authenticated:
-    st.markdown('<div class="centered-container"><div class="login-card">', unsafe_allow_html=True)
-    # Tab UI for login/signup (optional, you can use your own method)
+    st.markdown('<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:92vh;"><div class="login-card">', unsafe_allow_html=True)
+
+    # Tabs (visual only; adapt to your logic if needed)
     st.markdown(
         f"""
         <div class="tab-group">
@@ -161,27 +151,140 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
+    # Title
     if st.session_state.auth_mode == "login":
         st.markdown('<div class="login-title">Login Form</div>', unsafe_allow_html=True)
-        user_input = st.text_input("Email Address", placeholder="Email Address", key="login_email", label_visibility="collapsed")
-        password = st.text_input("Password", placeholder="Password", type="password", key="login_password", label_visibility="collapsed")
-        st.markdown('<a class="forgot-link">Forgot password?</a>', unsafe_allow_html=True)
-        login_btn = st.button("Login", key="login_btn")
-        if login_btn:
-            # Call your authentication logic here
-            st.success("Login pressed. (Your backend logic here)")
-        st.markdown('<div class="switch-links">Not a member? <a onclick="window.location.reload()">Signup now</a></div>', unsafe_allow_html=True)
+        user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10)
+        if not st.session_state.otp_sent:
+            if st.button("Send OTP", key="send_otp_btn"):
+                if not user_input.isdigit() or len(user_input) != 10:
+                    st.error("⚠️ Please enter a valid 10-digit phone number.")
+                else:
+                    try:
+                        response = requests.post(
+                            f"{API_BASE_URL}/login/send-otp",
+                            json={"phone_number": user_input}
+                        )
+                        if response.status_code == 200:
+                            st.session_state.otp_sent = True
+                            st.session_state.user_identifier = user_input
+                            st.success("✅ OTP sent successfully!")
+                            st.rerun()
+                        else:
+                            try:
+                                st.error(f"❌ Failed: {response.json()}")
+                            except Exception:
+                                st.error(f"❌ Failed: {response.text}")
+                    except requests.exceptions.RequestException as e:
+                        st.error(f"Error connecting to backend: {e}")
+        else:
+            st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
+            otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6)
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                if st.button("Verify & Sign In", key="verify_otp_btn"):
+                    if not otp or len(otp) < 4:
+                        st.error("⚠️ Please enter the 6-digit OTP you received.")
+                    else:
+                        try:
+                            response = requests.post(
+                                f"{API_BASE_URL}/login/verify-otp",
+                                json={
+                                    "phone_number": st.session_state.user_identifier,
+                                    "otp_code": otp
+                                }
+                            )
+                            if response.status_code == 200:
+                                json_resp = {}
+                                try:
+                                    json_resp = response.json()
+                                except Exception:
+                                    pass
+                                verified = json_resp.get("verified", True)
+                                if verified:
+                                    st.session_state.authenticated = True
+                                    st.success("🎉 Login successful!")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Invalid OTP.")
+                            else:
+                                try:
+                                    st.error(f"❌ Failed: {response.json()}")
+                                except Exception:
+                                    st.error(f"❌ Failed: {response.text}")
+                        except requests.exceptions.RequestException as e:
+                            st.error(f"Error connecting to backend: {e}")
+            with col2:
+                if st.button("↩️", key="back_btn", help="Go back"):
+                    st.session_state.otp_sent = False
+                    st.session_state.user_identifier = ""
+                    st.rerun()
+
+        st.markdown(
+            """<div class="switch-links">
+                Not a member? <a onclick="window.location.reload()">Signup now</a><br>
+                <a class="forgot-link" onclick="window.location.reload()">Forgot password?</a>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
     elif st.session_state.auth_mode == "signup":
         st.markdown('<div class="login-title">Signup Form</div>', unsafe_allow_html=True)
-        user_input = st.text_input("Email Address", placeholder="Email Address", key="signup_email", label_visibility="collapsed")
-        password = st.text_input("Password", placeholder="Password", type="password", key="signup_password", label_visibility="collapsed")
-        signup_btn = st.button("Signup", key="signup_btn")
-        if signup_btn:
-            # Call your signup logic here
-            st.success("Signup pressed. (Your backend logic here)")
-        st.markdown('<div class="switch-links">Already a member? <a onclick="window.location.reload()">Login</a></div>', unsafe_allow_html=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
+        phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
+        password = st.text_input("🔑 Create Password", type="password", placeholder="Create a secure password")
+        if st.button("Create Account", key="signup_btn"):
+            try:
+                response = requests.post(
+                    f"{API_BASE_URL}/signup/send-otp",
+                    json={"phone_number": phone, "password": password}
+                )
+                if response.status_code == 200:
+                    st.success("✅ Sign-up successful! Verify OTP sent.")
+                    st.session_state.auth_mode = "login"
+                    st.rerun()
+                else:
+                    try:
+                        st.error(f"❌ Failed: {response.json()}")
+                    except Exception:
+                        st.error(f"❌ Failed: {response.text}")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error connecting to backend: {e}")
+        st.markdown(
+            """<div class="switch-links">
+                Already a member? <a onclick="window.location.reload()">Login</a>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    elif st.session_state.auth_mode == "reset_password":
+        st.markdown('<div class="login-title">Reset Password</div>', unsafe_allow_html=True)
+        phone = st.text_input("📱 Phone Number", placeholder="Enter your phone number")
+        new_pass = st.text_input("🔑 New Password", type="password", placeholder="Enter new password")
+        if st.button("Reset Password", key="reset_btn"):
+            try:
+                response = requests.post(
+                    f"{API_BASE_URL}/reset-password",
+                    json={"phone_number": phone, "new_password": new_pass}
+                )
+                if response.status_code == 200:
+                    st.success("✅ Password reset successfully!")
+                    st.session_state.auth_mode = "login"
+                    st.rerun()
+                else:
+                    try:
+                        st.error(f"❌ Failed: {response.json()}")
+                    except Exception:
+                        st.error(f"❌ Failed: {response.text}")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Error connecting to backend: {e}")
+        st.markdown(
+            """<div class="switch-links">
+                Remember your password? <a onclick="window.location.reload()">Login</a>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("</div></div>", unsafe_allow_html=True)
     st.stop()
 
 # ========== MAIN APP ==========
@@ -213,7 +316,7 @@ if page == "Home":
                 except Exception as e:
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
-         
+
     # ✅ New Inline Translate Section (directly on Home page)
     st.markdown("---")
     st.subheader("🌍 Translate a Proverb")
@@ -228,6 +331,7 @@ if page == "Home":
                 st.error(f"⚠️ Translation failed: {e}")
         else:
             st.warning("Please enter a proverb to translate.")
+
 # Page: Proverb of the Day
 elif page == "Proverb of the day":
     st.subheader("📝 Proverb of the Day")
@@ -252,6 +356,7 @@ elif page == "Proverb of the day":
         st.warning("No proverbs available.")
     if st.button("🔄 Next Proverb"):
         st.rerun()
+
 # Page: States
 elif page == "States":
     st.subheader("📊 Proverbs Stats")
@@ -264,13 +369,11 @@ elif page == "States":
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
     sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
-    
     if sorted_regions:
         # Show as graph
         import matplotlib.pyplot as plt
-        regions = [item for item in sorted_regions[:10]]
+        regions = [item[0] for item in sorted_regions[:10]]
         counts = [item[1] for item in sorted_regions[:10]]
-        
         fig, ax = plt.subplots(figsize=(10, 6))
         bars = ax.bar(regions, counts, color='#0073e6')
         ax.set_xlabel('Regions')
@@ -279,7 +382,6 @@ elif page == "States":
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
         st.pyplot(fig)
-        
         # Also show as list
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
