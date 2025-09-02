@@ -72,6 +72,23 @@ def set_background(image_file):
 
 set_background("Background.jpg")
 
+# ========== Helper: normalize phone to E.164 ==========
+def normalize_indian_phone(raw: str) -> str:
+    if not raw or not isinstance(raw, str):
+        return ""
+    s = raw.strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+    if s.startswith("+"):
+        if s[1:].isdigit() and 7 <= len(s[1:]) <= 15:
+            return s
+        return ""
+    if s.startswith("0") and s[1:].isdigit() and len(s[1:]) == 10:
+        return "+91" + s[1:]
+    if s.startswith("91") and s.isdigit() and len(s) == 12:
+        return "+" + s
+    if s.isdigit() and len(s) == 10:
+        return "+91" + s
+    return ""
+
 # ========== Authentication ==========
 if not st.session_state.authenticated:
     st.markdown(
@@ -81,7 +98,6 @@ if not st.session_state.authenticated:
 
     st.markdown("<div style='margin-top:20px;'>", unsafe_allow_html=True)
     
-    # Phone number input
     user_input = st.text_input(
         "📱 Phone Number",
         placeholder="Enter your 10-digit phone number",
@@ -94,20 +110,29 @@ if not st.session_state.authenticated:
             if not user_input.isdigit() or len(user_input) != 10:
                 st.error("⚠️ Please enter a valid 10-digit phone number.")
             else:
-                try:
-                    response = requests.post(
-                        f"{API_BASE_URL}/send-otp",
-                        json={"phone_number": user_input}
-                    )
-                    if response.status_code == 200:
-                        st.session_state.otp_sent = True
-                        st.session_state.user_identifier = user_input
-                        st.success(f"✅ OTP sent successfully to {user_input}!")
-                        st.rerun()
-                    else:
-                        st.error(f"❌ Failed: {response.text}")
-                except requests.exceptions.RequestException as e:
-                    st.error(f"Error connecting to backend: {e}")
+                phone_e164 = normalize_indian_phone(user_input)
+                if not phone_e164:
+                    st.error("⚠️ Could not normalize phone number. Try again or include country code.")
+                else:
+                    try:
+                        response = requests.post(
+                            f"{API_BASE_URL}/send-otp",
+                            json={"phone_number": phone_e164},  # ✅ fixed key
+                            timeout=10
+                        )
+                        if response.status_code == 200:
+                            st.session_state.otp_sent = True
+                            st.session_state.user_identifier = phone_e164
+                            st.success(f"✅ OTP sent successfully to {phone_e164}!")
+                            st.rerun()
+                        else:
+                            try:
+                                err = response.json()
+                                st.error(f"❌ Failed: {err}")
+                            except Exception:
+                                st.error(f"❌ Failed: {response.text}")
+                    except requests.exceptions.RequestException as e:
+                        st.error(f"Error connecting to backend: {e}")
     else:
         st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
         otp = st.text_input(
@@ -129,20 +154,27 @@ if not st.session_state.authenticated:
                             f"{API_BASE_URL}/verify-otp",
                             json={
                                 "phone_number": st.session_state.user_identifier,
-                                "otp_code": otp
-                            }
+                                "otp_code": otp.strip()  # ✅ fixed key
+                            },
+                            timeout=10
                         )
                         if response.status_code == 200:
-                            json_resp = response.json()
-                            verified = json_resp.get("verified", True)
-                            if verified:
+                            try:
+                                json_resp = response.json()
+                            except Exception:
+                                json_resp = {}
+                            if json_resp.get("verified", True):
                                 st.session_state.authenticated = True
                                 st.success("🎉 Login successful!")
                                 st.rerun()
                             else:
                                 st.error("❌ Invalid OTP.")
                         else:
-                            st.error(f"❌ Failed: {response.text}")
+                            try:
+                                err = response.json()
+                                st.error(f"❌ Failed: {err}")
+                            except Exception:
+                                st.error(f"❌ Failed: {response.text}")
                     except requests.exceptions.RequestException as e:
                         st.error(f"Error connecting to backend: {e}")
         
@@ -161,8 +193,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ✅ Sidebar Navigation
+# ✅ Sidebar Navigation + Logout
 page = st.sidebar.selectbox("Navigate", ["Home", "Proverb of the day", "States"])
+if st.sidebar.button("🚪 Logout"):
+    st.session_state.authenticated = False
+    st.session_state.otp_sent = False
+    st.session_state.user_identifier = ""
+    st.success("✅ Logged out successfully.")
+    st.rerun()
 
 # Page: Home
 if page == "Home":
@@ -190,7 +228,6 @@ if page == "Home":
                     st.error(f"⚠️ Failed to save: {e}")
                 st.success("✅ Proverb saved successfully!")
 
-    # Translate Section
     st.markdown("---")
     st.subheader("🌍 Translate a Proverb")
     proverb_to_translate = st.text_input("Enter proverb to translate")
@@ -261,4 +298,3 @@ elif page == "States":
             st.write(f"{i}. {region}: {count} proverbs")
     else:
         st.info("No data yet.")
-    
