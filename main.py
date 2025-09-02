@@ -1,3 +1,4 @@
+# ===================== FRONTEND APP (Streamlit) =====================
 import streamlit as st
 import random
 import base64
@@ -11,7 +12,6 @@ st.set_page_config(page_title="Indian Wisdom", layout="centered")
 # ========== Session State ==========
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
-
 if "otp_sent" not in st.session_state:
     st.session_state.otp_sent = False
 if "user_identifier" not in st.session_state:
@@ -19,8 +19,8 @@ if "user_identifier" not in st.session_state:
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "login"
 
-# ✅ API URL
-API_BASE_URL = "https://api.corpus.swecha.org/api/v1/auth"
+# ✅ API URL (pointing to our backend defined later)
+API_BASE_URL = "http://127.0.0.1:8000/api/v1/auth"
 
 # ========== Background ==========
 def set_background(image_file):
@@ -36,9 +36,7 @@ def set_background(image_file):
             font-family: 'Segoe UI', sans-serif;
             color: black !important;
         }}
-        h1, h2, p {{
-            color: black !important;
-        }}
+        h1, h2, p {{ color: black !important; }}
         .stTextInput > div > div > input {{
             border-radius: 8px !important;
             border: 1px solid #ddd !important;
@@ -56,15 +54,6 @@ def set_background(image_file):
             font-weight: bold !important;
             width: 100% !important;
         }}
-        @media (max-width: 768px) {{
-            .stTextInput > div > div > input {{
-                font-size: 16px !important;
-            }}
-            .stButton > button {{
-                font-size: 16px !important;
-                padding: 1rem !important;
-            }}
-        }}
         </style>
         """,
         unsafe_allow_html=True
@@ -79,11 +68,8 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True
     )
 
-    st.markdown("<div style='margin-top:20px;'>", unsafe_allow_html=True)
-    
-    # Phone number input
     user_input = st.text_input("📱 Phone Number", placeholder="Enter your 10-digit phone number", max_chars=10, key="phone_input")
-    
+
     if not st.session_state.otp_sent:
         if st.button("Send OTP", key="send_otp_btn"):
             if not user_input.isdigit() or len(user_input) != 10:
@@ -106,7 +92,7 @@ if not st.session_state.authenticated:
     else:
         st.info(f"📱 OTP sent to {st.session_state.user_identifier}")
         otp = st.text_input("🔢 Enter OTP", type="password", placeholder="Enter 6-digit OTP", max_chars=6, key="otp_input")
-        
+
         col1, col2 = st.columns([3, 1])
         with col1:
             if st.button("Verify & Sign In", key="verify_otp_btn"):
@@ -122,26 +108,20 @@ if not st.session_state.authenticated:
                             }
                         )
                         if response.status_code == 200:
-                            json_resp = response.json()
-                            verified = json_resp.get("verified", True)
-                            if verified:
-                                st.session_state.authenticated = True
-                                st.success("🎉 Login successful!")
-                                st.rerun()
-                            else:
-                                st.error("❌ Invalid OTP.")
+                            st.session_state.authenticated = True
+                            st.success("🎉 Login successful!")
+                            st.rerun()
                         else:
                             st.error(f"❌ Failed: {response.text}")
                     except requests.exceptions.RequestException as e:
                         st.error(f"Error connecting to backend: {e}")
-        
+
         with col2:
             if st.button("↩️", key="back_btn"):
                 st.session_state.otp_sent = False
                 st.session_state.user_identifier = ""
                 st.rerun()
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
 
 # ========== MAIN APP ==========
@@ -229,7 +209,7 @@ elif page == "States":
         region = item.get("city", "Unknown")
         region_counts[region] = region_counts.get(region, 0) + 1
     sorted_regions = sorted(region_counts.items(), key=lambda x: x[1], reverse=True)
-    
+
     if sorted_regions:
         regions = [item[0] for item in sorted_regions[:10]]
         counts = [item[1] for item in sorted_regions[:10]]
@@ -241,9 +221,46 @@ elif page == "States":
         plt.xticks(rotation=90, ha='right')
         plt.tight_layout()
         st.pyplot(fig)
-        
+
         st.markdown("**Detailed Rankings:**")
         for i, (region, count) in enumerate(sorted_regions[:10], start=1):
             st.write(f"{i}. {region}: {count} proverbs")
     else:
         st.info("No data yet.")
+
+
+# ===================== BACKEND APP (FastAPI for OTP) =====================
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+app = FastAPI()
+otp_storage = {}
+
+class SendOtpRequest(BaseModel):
+    phone_number: str
+
+class VerifyOtpRequest(BaseModel):
+    phone_number: str
+    otp_code: str
+
+@app.post("/api/v1/auth/login/send-otp")
+def send_otp(request: SendOtpRequest):
+    phone = request.phone_number.strip()
+    if not phone.isdigit() or len(phone) < 10:
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+    otp = str(random.randint(100000, 999999))
+    otp_storage[phone] = otp
+    print(f"📩 OTP for {phone}: {otp}")  # simulate SMS
+    return {"success": True, "message": f"OTP sent to {phone}"}
+
+@app.post("/api/v1/auth/login/verify-otp")
+def verify_otp(request: VerifyOtpRequest):
+    phone = request.phone_number.strip()
+    otp = request.otp_code.strip()
+    if phone not in otp_storage:
+        raise HTTPException(status_code=400, detail="No OTP requested")
+    if otp_storage[phone] != otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    del otp_storage[phone]
+    return {"success": True, "message": "Login successful"}
+    
